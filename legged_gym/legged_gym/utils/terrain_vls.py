@@ -37,12 +37,12 @@ import pyfqmr
 from isaacgym import gymutil, gymapi
 
 from isaacgym import terrain_utils
-from legged_gym.envs.terrainprimitive.legged_primitive_config import LeggedPrimitiveCfg
+from legged_gym.envs.legged.legged_v2_config import LeggedV2Cfg
 from .trimesh import box_trimesh, combine_trimeshes
 
 
 class Terrainvls:
-    def __init__(self, cfg: LeggedPrimitiveCfg.terrain, num_robots, gym, sim) -> None:
+    def __init__(self, cfg: LeggedV2Cfg.terrain, num_robots, gym, sim) -> None:
         self.gym = gym
         self.sim = sim
 

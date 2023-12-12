@@ -28,11 +28,11 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-# from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
-from legged_gym.envs.base.pc_legged_robot_config import pc_LeggedRobotCfg, pc_LeggedRobotCfgPPO
+# from legged_gym.envs.terrainprimitive.legged_vls_config import LeggedVLSCfg, LeggedVLSCfgPPO
+from legged_gym.envs.legged.legged_v2_config import LeggedV2Cfg, LeggedV2CfgPPO
 
-class PC_A1RoughCfg( pc_LeggedRobotCfg ):
-    class init_state( pc_LeggedRobotCfg.init_state ):
+class A1V2Cfg( LeggedV2Cfg ):
+    class init_state( LeggedV2Cfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
             'FL_hip_joint': 0.1,   # [rad]
@@ -51,36 +51,29 @@ class PC_A1RoughCfg( pc_LeggedRobotCfg ):
             'RR_calf_joint': -1.5,    # [rad]
         }
 
-    class control( pc_LeggedRobotCfg.control ):
-        # PD Drive parameters:
+    class control( LeggedV2Cfg.control ):
         control_type = 'P'
-        stiffness = {'joint': 20.}  # [N*m/rad]
-        damping = {'joint': 0.5}     # [N*m*s/rad]
-        # action scale: target angle = actionScale * action + defaultAngle
+        stiffness = {'joint': 40.}  # [N*m/rad]
+        damping = {'joint': 1}     # [N*m*s/rad]
         action_scale = 0.25
-        # decimation: Number of control action updates @ sim DT per policy DT
         decimation = 4
 
-    class asset( pc_LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/a1/urdf/a1.urdf'
-        name = "a1"
+    class asset( LeggedV2Cfg.asset ):
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/a1/urdf/a1cam.urdf'
         foot_name = "foot"
-        penalize_contacts_on = ["thigh", "calf"]
-        terminate_after_contacts_on = ["base"]
+        penalize_contacts_on = ["thigh", "calf", "base"]
+        terminate_after_contacts_on = ["base"]#, "thigh", "calf"]
         self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
   
-    class rewards( pc_LeggedRobotCfg.rewards ):
+    class rewards( LeggedV2Cfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.25
-        class scales( pc_LeggedRobotCfg.rewards.scales ):
-            torques = -0.0002
-            dof_pos_limits = -10.0
 
-class PC_A1RoughCfgPPO( pc_LeggedRobotCfgPPO ):
-    class algorithm( pc_LeggedRobotCfgPPO.algorithm ):
+class A1V2CfgPPO( LeggedV2CfgPPO ):
+    class algorithm( LeggedV2CfgPPO.algorithm ):
         entropy_coef = 0.01
-    class runner( pc_LeggedRobotCfgPPO.runner ):
+    class runner( LeggedV2CfgPPO.runner ):
         run_name = ''
-        experiment_name = 'pc_rough_a1'
+        experiment_name = 'a1_v2'
 
   

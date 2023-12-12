@@ -18,7 +18,7 @@ def train(args):
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-    log_root = os.path.join(root_dir, 'logs', train_cfg.runner.experiment_name)
+    log_root = os.path.join(root_dir, 'weights', train_cfg.runner.experiment_name)
     log_dir = os.path.join(log_root, datetime.now().strftime('%b%d_%H-%M-%S') + '_' + args.run_name)
     os.makedirs(log_dir)
     
@@ -34,8 +34,8 @@ def train(args):
                })
     
     
-    wandb.save("/home/ustc/robot/learning/iros2024/legged_gym/legged_gym/envs/terrainprimitive" + "/legged_v2_config.py", policy="now")
-    wandb.save("/home/ustc/robot/learning/iros2024/legged_gym/legged_gym/envs/terrainprimitive" + "/legged_v2.py", policy="now")
+    wandb.save("/home/ustc/robot/learning/iros2024/legged_gym/legged_gym/envs/legged" + "/legged_v2_config.py", policy="now")
+    wandb.save("/home/ustc/robot/learning/iros2024/legged_gym/legged_gym/envs/legged" + "/legged_v2.py", policy="now")
     
     env, env_cfg = task_registry.make_env(name=args.task, args=args)    
     ppo_runner, train_cfg = task_registry.make_alg_runner_rsl(env=env, name=args.task, args=args, log_dir_=log_dir)
@@ -47,6 +47,6 @@ if __name__ == '__main__':
     # args.headless = True
     args.task = 'a1_v2'    # task选择任务的文件
     
-    # args.run_name = '000-00'    # run_name用来保存权重目录. 前3为表示group，后面为实验编号. 相同代码不同参数的实验为同一group
+    args.run_name = '000-00'    # run_name用来保存权重目录. 前3为表示group，后面为实验编号. 相同代码不同参数的实验为同一group
     
     train(args)

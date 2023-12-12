@@ -11,8 +11,7 @@ from rsl_rl.runners import OnPolicyRunner, OnPolicyRunnerDepth, OnPolicyRunnerWa
 from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
 from .helpers import get_args, update_cfg_from_args, class_to_dict, get_load_path, set_seed, parse_sim_params
 from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
-# from legged_gym.envs.terrainprimitive.legged_primitive_config import LeggedPrimitiveCfg, LeggedPrimitiveCfgPPO
-from legged_gym.envs.terrainprimitive.legged_v2_config import LeggedV2Cfg, LeggedV2CfgPPO
+from legged_gym.envs.legged.legged_v2_config import LeggedV2Cfg, LeggedV2CfgPPO
 
 class TaskRegistry():
     def __init__(self):

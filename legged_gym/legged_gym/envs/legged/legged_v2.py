@@ -15,9 +15,7 @@ from typing import Tuple, Dict
 
 from legged_gym import LEGGED_GYM_ROOT_DIR
 # from legged_gym.envs.base.base_task import BaseTask
-from legged_gym.envs.terrainprimitive.base_task import BaseTask
-# from legged_gym.utils.terrain import Terrain
-# from legged_gym.utils.terrain_new import TerrainNew
+from legged_gym.envs.legged.base_task import BaseTask
 from legged_gym.utils.terrain_vls import Terrainvls
 
 from legged_gym.utils.math import *

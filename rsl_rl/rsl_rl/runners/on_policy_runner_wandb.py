@@ -557,7 +557,7 @@ class OnPolicyRunnerWandb:
 
         torch.save(state_dict, path)
         #? 目前不知道这个有啥用
-        wandb.save(path)
+        # wandb.save(path)
     
     def load(self, path, load_optimizer=True):
         print("*" * 80)
