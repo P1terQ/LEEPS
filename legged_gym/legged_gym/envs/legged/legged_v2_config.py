@@ -193,7 +193,7 @@ class LeggedV2Cfg(BaseConfig):
         
         # trimesh only:
         #! 这个之所以改小,是因为1.5的时候训练stairs的时候都变成slope了
-        slope_treshold = 0.5#1.5# slopes above this threshold will be corrected to vertical surfaces
+        slope_treshold = 1.5#1.5# slopes above this threshold will be corrected to vertical surfaces
         origin_zero_z = True    # 将env_origin_z都设置为0，而不是地面高度
 
 
