@@ -211,7 +211,7 @@ class Terrainvls:
                                 horizontal_scale=self.cfg.horizontal_scale)
         
         #! test mode: set all subterrain difficulty to 1
-        difficulty = 0.8
+        # difficulty = 0.8
         
         # terrain height noise params
         # max_height = (self.cfg.height[1] - self.cfg.height[0]) * difficulty + self.cfg.height[0]
@@ -543,7 +543,7 @@ class Terrainvls:
                                 platform_size=1.5, 
                                 depth=-10,
                                 if_flat=False):
-
+        # print("bbbbbbbbbbbbbbbbbbbbbbbbb")
         # switch parameters to discrete units
         stone_size = int(stone_size / terrain.horizontal_scale)
         stone_distance = int(stone_distance / terrain.horizontal_scale)
@@ -880,6 +880,7 @@ class Terrainvls:
         # switch parameters to discrete units
         step_width = int(step_width / terrain.horizontal_scale)
         
+        # print("aaaaaaaaaaaaaaaaaaa")
 
         if step_height!=0:
 

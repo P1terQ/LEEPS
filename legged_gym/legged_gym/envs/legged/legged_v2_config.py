@@ -175,10 +175,10 @@ class LeggedV2Cfg(BaseConfig):
         num_cols = 10 # number of terrain cols (types)
         
         terrain_dict = {
-                        "step": 0.8, # proportions[0]
+                        "step": 0.0, # proportions[0]
                         "gap": 0.0,  # proportions[1]
-                        "slope": 0.0,
-                        "stair": 1.0, 
+                        "slope": 1.0,
+                        "stair": 0.0, 
                         "pillar": 0.0, 
                         "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
