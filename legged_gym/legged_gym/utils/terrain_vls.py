@@ -211,7 +211,7 @@ class Terrainvls:
                                 horizontal_scale=self.cfg.horizontal_scale)
         
         #! test mode: set all subterrain difficulty to 1
-        difficulty = 0.8
+        # difficulty = 0.8
         
         # terrain height noise params
         # max_height = (self.cfg.height[1] - self.cfg.height[0]) * difficulty + self.cfg.height[0]
@@ -261,12 +261,12 @@ class Terrainvls:
         elif choice < self.proportions[2]:
             idx = 3
             self.slope_terrain_goal(terrain,
-                          slope=0.8*difficulty)
+                          slope=1.3*difficulty)
             
         elif choice < self.proportions[3]:
             idx = 4
             self.stairs_terrain_goal(terrain,
-                           step_width=0.5-0.2*difficulty,
+                           step_width=0.5-0.25*difficulty,
                             step_height=0.15*difficulty,
             )
             
@@ -355,40 +355,16 @@ class Terrainvls:
                             log_width = 0.4 - 0.1*difficulty,
                             flat=if_flat
                              )
-            
+
+
         elif choice < self.proportions[10]:
             idx = 11
             
-            slope = difficulty * 0.4
-            
-            threshold = self.proportions[10] + (self.proportions[10]-self.proportions[9])/2
-            if choice < self.proportions[9] + (self.proportions[10]-self.proportions[9])/2:
-                slope *= -1
-                
-            terrain_utils.pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
-            terrain_utils.random_uniform_terrain(terrain, min_height=-0.05, max_height=0.05, step=0.005, downsampled_scale=0.2)
-            
-        elif choice < self.proportions[11]:
-            idx = 12
-            
-            step_height = 0.05 + 0.18 * difficulty
-            
-            if choice < self.proportions[10] + (self.proportions[11]-self.proportions[10])/2:
-                step_height *= -1
-
-            terrain_utils.pyramid_stairs_terrain(terrain, step_width=0.31, step_height=step_height, platform_size=3.)
-
-
-        elif choice < self.proportions[12]:
-            idx = 13
-            
-            # self.flat_terrain_goal(terrain)
-            num_rectangles = 20
-            rectangle_min_size = 1.
-            rectangle_max_size = 2.
-            discrete_obstacles_height = 0.05 + difficulty * 0.2
-            terrain_utils.discrete_obstacles_terrain(terrain, discrete_obstacles_height, rectangle_min_size, rectangle_max_size, num_rectangles, platform_size=3.)
-
+            self.discrete_terrain_goal(terrain, 
+                                       max_height = difficulty * 0.2, 
+                                       min_size = 1., 
+                                       max_size = 2., 
+                                       num_rects = 20)
             
             
         terrain.idx = idx
@@ -420,15 +396,6 @@ class Terrainvls:
 
         if terrain.idx == 6: # flat
             self.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z] 
-        elif terrain.idx == 11: # pyramid slope
-            env_origin_z = np.max(terrain.height_field_raw[x1:x2, y1:y2])*terrain.vertical_scale 
-            self.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z] 
-        elif terrain.idx == 12: # pyramid stair
-            env_origin_z = np.max(terrain.height_field_raw[x1:x2, y1:y2])*terrain.vertical_scale 
-            self.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z] 
-        elif terrain.idx == 13: # discrete
-            env_origin_z = np.max(terrain.height_field_raw[x1:x2, y1:y2])*terrain.vertical_scale 
-            self.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z] 
         else:
             self.env_origins[i, j] = [i * self.env_length + 0.7, (j + 0.5) * self.env_width, env_origin_z]  
             #! parkour 暂时把这个去了
@@ -440,6 +407,43 @@ class Terrainvls:
         #! parkour 暂时把这个去了
         # self.goal[i,j,0] = terrain.goal[0] + i * self.env_length
         # self.goal[i,j,1] = terrain.goal[1] + j * self.env_width
+        
+    def discrete_terrain_goal(self, terrain, max_height, min_size, max_size, num_rects):
+        """
+        Generate a terrain with gaps
+
+        Parameters:
+            terrain (terrain): the terrain
+            max_height (float): maximum height of the obstacles (range=[-max, -max/2, max/2, max]) [meters]
+            min_size (float): minimum size of a rectangle obstacle [meters]
+            max_size (float): maximum size of a rectangle obstacle [meters]
+            num_rects (int): number of randomly generated obstacles
+            platform_size (float): size of the flat platform at the center of the terrain [meters]
+        Returns:
+            terrain (SubTerrain): update terrain
+        """
+        # switch parameters to discrete units
+        max_height = int(max_height / terrain.vertical_scale)
+        min_size = int(min_size / terrain.horizontal_scale)
+        max_size = int(max_size / terrain.horizontal_scale)
+
+        (i, j) = terrain.height_field_raw.shape
+        height_range = [-max_height, -max_height // 2, max_height // 2, max_height]
+        width_range = range(min_size, max_size, 4)
+        length_range = range(min_size, max_size, 4)
+
+        for _ in range(num_rects):
+            width = np.random.choice(width_range)
+            length = np.random.choice(length_range)
+            start_i = np.random.choice(range(0, i-width, 4))
+            start_j = np.random.choice(range(0, j-length, 4))
+            terrain.height_field_raw[start_i:start_i+width, start_j:start_j+length] = np.random.choice(height_range)
+        
+        goal = [terrain.width * terrain.horizontal_scale - 1.0 , terrain.length * 1/2 * terrain.horizontal_scale]
+        terrain.goal = goal
+        
+        return terrain
+        
         
     def crawl_terrain_goal(self,
                         terrain,
@@ -888,7 +892,7 @@ class Terrainvls:
             start_x = int(platform_length/terrain.horizontal_scale)
             stop_x = int(terrain.width - platform_length/terrain.horizontal_scale)
                 
-            while (stop_x - start_x) > 1.0/terrain.horizontal_scale:
+            while (stop_x - start_x) > 0.5/terrain.horizontal_scale:
                 start_x += step_width
                 stop_x -= step_width
                 height += step_height
@@ -972,76 +976,8 @@ class Terrainvls:
         # terrain.height_field_raw[:pad_width, :] = pad_height
         # terrain.height_field_raw[-pad_width:, :] = pad_height
         
-    def pyramid_stairs_terrain(self,
-                               terrain,
-                               step_width,
-                               step_height,
-                               platform_size=2,
-                               if_flat = False):
-        
-        step_width = int(step_width / terrain.horizontal_scale)
-        step_height = int(step_height / terrain.vertical_scale)
-        platform_size = int(platform_size / terrain.horizontal_scale)
-        
-        height = 0
-        start_x = 0
-        stop_x = terrain.width
-        start_y = 0
-        stop_y = terrain.length
 
-        if not if_flat:
 
-            while (stop_x - start_x) > platform_size and (stop_y - start_y) > platform_size:
-                start_x += step_width
-                stop_x -= step_width
-                start_y += step_width
-                stop_y -= step_width
-                # height += step_height
-                height -= step_height
-                terrain.height_field_raw[start_x: stop_x, start_y: stop_y] = height
-                
-        goal = [terrain.width * 4/5 * terrain.horizontal_scale , terrain.length * 1/2 * terrain.horizontal_scale]
-        terrain.goal = goal
-            
-        return terrain
-    
-    def pyramid_gap_terrain(self,
-                            terrain,
-                            gap_size,
-                            gap_depth = -200,
-                            platform_size=2,
-                            if_flat = False):
-        
-        # gap_size = int(gap_size / terrain.horizontal_scale)
-        gap_depth = int(gap_depth / terrain.vertical_scale)
-        
-        
-        # terrain.height_field_raw[int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale), int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale)] = -gap_depth
-        # terrain.height_field_raw[int(-(6-gap_size)/terrain.horizontal_scale):int((6-gap_size)/terrain.horizontal_scale), int(-(6-gap_size)/terrain.horizontal_scale):int((6-gap_size)/terrain.horizontal_scale)] = 0
-        # terrain.height_field_raw[int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale), int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale)] = -gap_depth
-        # terrain.height_field_raw[int(-(6-gap_size)/terrain.horizontal_scale):int((6-gap_size)/terrain.horizontal_scale), int(-(6-gap_size)/terrain.horizontal_scale):int((6-gap_size)/terrain.horizontal_scale)] = 0
-
-        # a = int(6/terrain.horizontal_scale)
-        # terrain.height_field_raw[int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale), int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale)] = -50
-        # terrain.height_field_raw[int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale), int(-6/terrain.horizontal_scale):int(6/terrain.horizontal_scale)] = 100
-        # terrain.height_field_raw[int(-5/terrain.horizontal_scale):int(5/terrain.horizontal_scale), int(-5/terrain.horizontal_scale):int(5/terrain.horizontal_scale)] = -50
-
-        # start_x = int(-5/terrain.horizontal_scale)
-        # end_x = int(5/terrain.horizontal_scale)
-        # start_y = int(-5/terrain.horizontal_scale)
-        # end_y = int(5/terrain.horizontal_scale)
-        # terrain.height_field_raw[start_x:end_x, start_y:end_y] = -100
-        
-        # terrain.height_field_raw[-100:100, -100:100] = -100
-        terrain.height_field_raw[-150:150, -150:150] = -100
-        terrain.height_field_raw[-120:120, -120:120] = 100
-
-        goal = [terrain.width * 4/5 * terrain.horizontal_scale , terrain.length * 1/2 * terrain.horizontal_scale]
-        terrain.goal = goal
-            
-        return terrain
-    
-    
     
 
 def convert_heightfield_to_trimesh(height_field_raw, horizontal_scale, vertical_scale, slope_threshold=None):

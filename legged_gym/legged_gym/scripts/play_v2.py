@@ -12,42 +12,42 @@ import torch
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     
-    env_cfg.env.num_envs = 10
-    env_cfg.terrain.num_rows = 3
-    env_cfg.terrain.num_cols = 10
-    env_cfg.terrain.terrain_dict = {
-                        "step": 0.1, # proportions[0]
-                        "gap": 0.1,  # proportions[1]
-                        "slope": 0.1,
-                        "stair": 0.1, 
-                        "pillar": 0.1, 
-                        "flat": 0.0,       # proportions[5]
-                        "steppingstones": 0.1, # proportions[6]
-                        "crawl": 0.1,     # proportions[7]
-                        "log": 0.3,
-                        "crack": 0.0,
-                        "pyramid upstair": 0.0,
-                        "pyramid gap": 0.0,
-                        "simple_flat": 0.0
-                        }   
-    # env_cfg.env.num_envs = 1
-    # env_cfg.terrain.num_rows = 10
-    # env_cfg.terrain.num_cols = 1
+    # env_cfg.env.num_envs = 10
+    # env_cfg.terrain.num_rows = 3
+    # env_cfg.terrain.num_cols = 10
     # env_cfg.terrain.terrain_dict = {
-    #                     "step": 0.0, # proportions[0]
-    #                     "gap": 0.0,  # proportions[1]
-    #                     "slope": 0.0,
-    #                     "stair": 0.0, 
-    #                     "pillar": 0.0, 
+    #                     "step": 0.1, # proportions[0]
+    #                     "gap": 0.1,  # proportions[1]
+    #                     "slope": 0.1,
+    #                     "stair": 0.1, 
+    #                     "pillar": 0.1, 
     #                     "flat": 0.0,       # proportions[5]
-    #                     "steppingstones": 1.0, # proportions[6]
-    #                     "crawl": 0.0,     # proportions[7]
-    #                     "log": 0.0,
+    #                     "steppingstones": 0.1, # proportions[6]
+    #                     "crawl": 0.1,     # proportions[7]
+    #                     "log": 0.3,
     #                     "crack": 0.0,
     #                     "pyramid upstair": 0.0,
     #                     "pyramid gap": 0.0,
     #                     "simple_flat": 0.0
     #                     }   
+    env_cfg.env.num_envs = 1
+    env_cfg.terrain.num_rows = 10
+    env_cfg.terrain.num_cols = 1
+    env_cfg.terrain.terrain_dict = {
+                        "step": 0.0, # proportions[0]
+                        "gap": 0.0,  # proportions[1]
+                        "slope": 0.0,
+                        "stair": 1.0, 
+                        "pillar": 0.0, 
+                        "flat": 0.0,       # proportions[5]
+                        "steppingstones": 0.0, # proportions[6]
+                        "crawl": 0.0,     # proportions[7]
+                        "log": 0.0,
+                        "crack": 0.0,
+                        "pyramid upstair": 0.0,
+                        "pyramid gap": 0.0,
+                        "simple_flat": 0.0
+                        }   
     env_cfg.terrain.curriculum = True
     
     # env_cfg.depth.camera_num_envs = 1

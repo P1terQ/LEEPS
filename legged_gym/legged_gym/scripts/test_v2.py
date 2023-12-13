@@ -26,14 +26,12 @@ def test_env(args):
                         "slope": 0.0,
                         "stair": 0.0, 
                         "pillar": 0.0, 
-                        "flat": 1.0,       # proportions[5]
+                        "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "pyramid slope": 0.0,
-                        "pyramid stair": 0.0,
-                        "discete": 0.0
+                        "discete": 1.0
                         }
     env_cfg.terrain.terrain_proportions = list(env_cfg.terrain.terrain_dict.values())
     env_cfg.terrain.curriculum = True
