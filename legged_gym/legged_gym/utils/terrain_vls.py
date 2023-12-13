@@ -267,7 +267,7 @@ class Terrainvls:
             idx = 4
             self.stairs_terrain_goal(terrain,
                            step_width=0.5-0.25*difficulty,
-                            step_height=0.15*difficulty,
+                            step_height=0.12*difficulty,
             )
             
 
@@ -863,7 +863,7 @@ class Terrainvls:
             
             terrain.height_field_raw[start_x:stop_x,:] += (max_height * xx).astype(terrain.height_field_raw.dtype)
             
-            half_length = int(0.5/terrain.horizontal_scale)
+            half_length = int(0.3/terrain.horizontal_scale)
             terrain.height_field_raw[center_x - half_length:center_x + half_length,:] = \
                 terrain.height_field_raw[center_x - half_length:center_x + half_length,:].min()
         
@@ -893,7 +893,7 @@ class Terrainvls:
             start_x = int(platform_length/terrain.horizontal_scale)
             stop_x = int(terrain.width - platform_length/terrain.horizontal_scale)
                 
-            while (stop_x - start_x) > 0.5/terrain.horizontal_scale:
+            while (stop_x - start_x) > 0.3/terrain.horizontal_scale:
                 start_x += step_width
                 stop_x -= step_width
                 height += step_height
