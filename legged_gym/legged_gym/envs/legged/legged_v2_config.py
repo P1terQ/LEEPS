@@ -122,11 +122,8 @@ class LeggedV2Cfg(BaseConfig):
         # border_size = 0 # [m]
         
         height = [0.02, 0.06]   # terrain roughness height
-        # gap_size = [0.02, 0.1]
-        # stepping_stone_distance = [0.02, 0.08]
         downsampled_scale = 0.075
-        # all_vertical = False
-        # no_flat = True
+
         
         #! 在平地上test的时候可以不用curriculum，在复杂地形上还是需要
         # curriculum =  False   # terrain curriculum
@@ -166,10 +163,6 @@ class LeggedV2Cfg(BaseConfig):
         terrain_width = 4.
         pyramid = False
         
-        # terrain_length = 10
-        # terrain_width = 10
-        # pyramid = True
-        
         #! 训练时subterrain的数目
         num_rows= 10 # number of terrain rows (levels)  # spreaded is benifitiall !
         num_cols = 10 # number of terrain cols (types)
@@ -179,16 +172,14 @@ class LeggedV2Cfg(BaseConfig):
                         "step": 0.0, # proportions[0]
                         "gap": 0.0,  # proportions[1]
                         "slope": 0.0,
-                        "stair": 1.0, 
-                        "pillar": 0.0, 
+                        "stair": 0.0, 
+                        "discrete": 1.0, 
                         "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "pyramid slope": 0.0,
-                        "pyramid stair": 0.0,
-                        "discete": 0.0
+                        "dual": 0.0
                         }
         terrain_proportions = list(terrain_dict.values())
         
@@ -331,7 +322,7 @@ class LeggedV2Cfg(BaseConfig):
             exploration_vel = 1.5 #2.0 #1.2
             stalling = 1
             facing_target = 0.3
-            early_termination = -200 
+            # early_termination = -200 
             staystill_atgoal = 250 # 200 #8 #2
             # norotation_neargoal = -0.1
 
@@ -341,8 +332,6 @@ class LeggedV2Cfg(BaseConfig):
             feet_slip = -0.08 #-0.04
             dof_error = -0.08   # -0.04
             hip_pos = -0.5
-            # feetF_balance = -0.01
-            # contact_sequence = -0.00001 # -0.0001 #-0.002
             feetair_awaygoal = 1.5
             feet_floating = -8.0#-2.0    
 
