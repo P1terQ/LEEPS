@@ -35,18 +35,16 @@ def play(args):
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.terrain_dict = {
                         "step": 0.0, # proportions[0]
-                        "gap": 0.0,  # proportions[1]
+                        "gap": 1.0,  # proportions[1]
                         "slope": 0.0,
-                        "stair": 1.0, 
+                        "stair": 0.0, 
                         "pillar": 0.0, 
                         "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "pyramid upstair": 0.0,
-                        "pyramid gap": 0.0,
-                        "simple_flat": 0.0
+                        "dual": 0.0
                         }   
     env_cfg.terrain.curriculum = True
     

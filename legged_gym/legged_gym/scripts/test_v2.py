@@ -12,34 +12,30 @@ def test_env(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
 
     # env_cfg.terrain.num_rows = max(2, env_cfg.terrain.max_init_terrain_level+1)    #!
-    env_cfg.terrain.num_rows = 10
+    # env_cfg.terrain.num_rows = 10
+    # env_cfg.terrain.num_cols = 10
+    env_cfg.terrain.num_rows = 10   #!
     env_cfg.terrain.num_cols = 1
-    # env_cfg.terrain.num_rows = 1   #!
-    # env_cfg.terrain.num_cols = 1
     # env_cfg.env.num_envs = env_cfg.terrain.num_rpillar_xows * env_cfg.terrain.num_cols
     env_cfg.env.num_envs = 1
     
-    env_cfg.terrain.border_size = 0.0
+    env_cfg.terrain.border_size = 1.0
     env_cfg.terrain.terrain_dict = {
                         "step": 0.0, # proportions[0]
                         "gap": 0.0,  # proportions[1]
                         "slope": 0.0,
                         "stair": 0.0, 
-                        "pillar": 0.0, 
+                        "discrete": 1.0, 
                         "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "discete": 1.0
+                        "dual": 0.0
                         }
     env_cfg.terrain.terrain_proportions = list(env_cfg.terrain.terrain_dict.values())
     env_cfg.terrain.curriculum = True
     
-    # env_cfg.terrain.terrain_length = 10
-    # env_cfg.terrain.terrain_width = 10
-
-
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
     for i in range(int(1000*env.max_episode_length)):

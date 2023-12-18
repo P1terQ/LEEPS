@@ -47,6 +47,6 @@ if __name__ == '__main__':
     # args.headless = True
     args.task = 'a1_v2'    # task选择任务的文件
     
-    args.run_name = '000-00'    # run_name用来保存权重目录. 前3为表示group，后面为实验编号. 相同代码不同参数的实验为同一group
+    # args.run_name = '000-00'    # run_name用来保存权重目录. 前3为表示group，后面为实验编号. 相同代码不同参数的实验为同一group
     
     train(args)

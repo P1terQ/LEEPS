@@ -1112,22 +1112,35 @@ class LeggedV2(BaseTask):
         """ Adds a triangle mesh terrain to the simulation, sets parameters based on the cfg.
             Very slow when horizontal_scale is small
         """
+        print("Adding trimesh to simulation...")
+        # 地面tremish
         tm_params = gymapi.TriangleMeshParams()
         tm_params.nb_vertices = self.terrain.vertices.shape[0]
         tm_params.nb_triangles = self.terrain.triangles.shape[0]
-
         tm_params.transform.p.x = -self.terrain.cfg.border_size 
         tm_params.transform.p.y = -self.terrain.cfg.border_size
         tm_params.transform.p.z = 0.0
         tm_params.static_friction = self.cfg.terrain.static_friction
         tm_params.dynamic_friction = self.cfg.terrain.dynamic_friction
         tm_params.restitution = self.cfg.terrain.restitution
-        print("Adding trimesh to simulation...")
-        self.gym.add_triangle_mesh(self.sim, self.terrain.vertices.flatten(order='C'), self.terrain.triangles.flatten(order='C'), tm_params)  
+        self.gym.add_triangle_mesh(self.sim, self.terrain.vertices.flatten(order='C'), self.terrain.triangles.flatten(order='C'), tm_params)          
+        
+        #! 天花板tremish. 这个只有在discrete地形中才生效
+        tm_params = gymapi.TriangleMeshParams()
+        tm_params.nb_vertices = self.terrain.vertices_ceiling.shape[0]
+        tm_params.nb_triangles = self.terrain.triangles_ceiling.shape[0]
+        tm_params.transform.p.x = -self.terrain.cfg.border_size 
+        tm_params.transform.p.y = -self.terrain.cfg.border_size
+        tm_params.transform.p.z = 0.0
+        tm_params.static_friction = self.cfg.terrain.static_friction
+        tm_params.dynamic_friction = self.cfg.terrain.dynamic_friction
+        tm_params.restitution = self.cfg.terrain.restitution
+        # self.gym.add_triangle_mesh(self.sim, self.terrain.vertices_ceiling.flatten(order='C'), self.terrain.triangles_ceiling.flatten(order='C'), tm_params)  
+        
         print("Trimesh added")
         
         self.terrain_height_samples = torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
-        self.ceiling_height_samples = torch.tensor(self.terrain.obstacle_height).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
+        self.ceiling_height_samples = torch.tensor(self.terrain.ceilingsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
 
         
         self.x_edge_mask = torch.tensor(self.terrain.x_edge_mask).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
