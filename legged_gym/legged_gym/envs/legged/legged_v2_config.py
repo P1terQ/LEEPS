@@ -42,6 +42,7 @@ class LeggedV2Cfg(BaseConfig):
         
         # task_episode_length_s = 5
         task_episode_length_s = 7
+        # task_episode_length_s = 6   #!最后的2s需要足够长，才能使机器人以一个稳定的形式停下来
         
         target_radius = [2,3]
         
@@ -168,17 +169,17 @@ class LeggedV2Cfg(BaseConfig):
         num_cols = 10 # number of terrain cols (types)
         
         terrain_dict = {
-                        "step": 0.0, # proportions[0]
-                        "gap": 0.0,  # proportions[1]
-                        "slope": 0.0,
-                        "stair": 0.0, 
-                        "discrete": 1.0, 
+                        "step": 0.1, # proportions[0]
+                        "gap": 0.1,  # proportions[1]
+                        "slope": 0.1,
+                        "stair": 0.1, 
+                        "discrete": 0.1, 
                         "flat": 0.0,       # proportions[5]
-                        "steppingstones": 0.0, # proportions[6]
-                        "crawl": 0.0,     # proportions[7]
-                        "log": 0.0,
+                        "steppingstones": 0.1, # proportions[6]
+                        "crawl": 0.1,     # proportions[7]
+                        "log": 0.1,
                         "crack": 0.0,
-                        "dual": 0.0
+                        "dual": 0.1
                         }
         terrain_proportions = list(terrain_dict.values())
         
@@ -322,7 +323,7 @@ class LeggedV2Cfg(BaseConfig):
             stalling = 1
             facing_target = 0.3
             # early_termination = -200 
-            staystill_atgoal = 250 # 200 #8 #2
+            staystill_atgoal = 1000 #250 # 200 #8 #2
             # norotation_neargoal = -0.1
 
 

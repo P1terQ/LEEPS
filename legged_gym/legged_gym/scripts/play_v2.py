@@ -35,12 +35,12 @@ def play(args):
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.terrain_dict = {
                         "step": 0.0, # proportions[0]
-                        "gap": 1.0,  # proportions[1]
+                        "gap": 0.0,  # proportions[1]
                         "slope": 0.0,
                         "stair": 0.0, 
-                        "pillar": 0.0, 
+                        "discrete": 0.0, 
                         "flat": 0.0,       # proportions[5]
-                        "steppingstones": 0.0, # proportions[6]
+                        "steppingstones": 1.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
@@ -91,16 +91,15 @@ def play(args):
 
 
 if __name__ == '__main__':
-    EXPORT_POLICY = False
-    RECORD_FRAMES = False
-    MOVE_CAMERA = False
+
     args = get_args()
     
     args.task = 'a1_v2'
     
-    # args.debug_viz = True  
+    args.debug_viz = True  
     # args.remote = True
-    
-    # args.load_run = '/home/ustc/robot/learning/iros2024/logs/a1_v2/Nov23_14-50-02_001-37'
+    # args.use_camera = True
+
+    args.load_run = '/home/ustc/robot/projects/legged_locomotion/iros2024/weights/a1_v2/Nov28_10-39-59_001-69'
     
     play(args)

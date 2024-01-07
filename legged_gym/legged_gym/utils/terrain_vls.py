@@ -236,7 +236,7 @@ class Terrainvls:
                             horizontal_scale=self.cfg.horizontal_scale)
         
         #! test mode: set all subterrain difficulty to 1
-        # difficulty = 1.0
+        # difficulty = 0.1
         
         if choice < self.proportions[0]:
             idx = 1
@@ -374,13 +374,18 @@ class Terrainvls:
         elif choice < self.proportions[10]:
             idx = 11
             
+            if_flat = False
+            if difficulty == 0:
+                if_flat = True
+            
             self.dualobs_terrain_goal(terrain, 
-                                    noise_max_height= 0.005*difficulty,
-                                    noise_min_height= -0.005*difficulty,
-                                    stone_size = [0.2,0.4],
-                                    stone_distance = [1.2-0.5*difficulty, 1.7-0.5*difficulty],
-                                    
+                                    num_row=num_row_,
+                                    num_col=num_col_,
+                                    terrain_stone_distance = [0.8-0.5*difficulty, 1.3-0.5*difficulty],
+                                    air_stone_distance = [1.0-0.5*difficulty, 2.0-0.5*difficulty],
+                                    if_flat_=if_flat
                                        )
+            # self.add_roughness(terrain, difficulty=0.1)
             
             
         terrain.idx = idx
@@ -398,7 +403,7 @@ class Terrainvls:
         
         self.height_field_raw[start_x: end_x, start_y:end_y] = terrain.height_field_raw
         
-        self.ceiling_height_raw[start_x: end_x, start_y:end_y] = terrain.ceiling_height_raw
+        # self.ceiling_height_raw[start_x: end_x, start_y:end_y] = terrain.ceiling_height_raw
         # self.ceiling_height_raw[i * self.length_per_env_pixels: (i + 1) * self.length_per_env_pixels, j * self.width_per_env_pixels:(j + 1) * self.width_per_env_pixels] = terrain.ceiling_height_raw
 
         env_origin_x = (i + 0.5) * self.env_length
@@ -417,111 +422,163 @@ class Terrainvls:
         if terrain.idx == 6: # flat
             self.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z] 
         else:
-            self.env_origins[i, j] = [i * self.env_length + 0.7, (j + 0.5) * self.env_width, env_origin_z]  
-            #! parkour 暂时把这个去了
+            self.env_origins[i, j] = [i * self.env_length + 0.7, (j + 0.5) * self.env_width, env_origin_z]  # 0.7
             self.goal[i,j,0] = terrain.goal[0] + i * self.env_length
             self.goal[i,j,1] = terrain.goal[1] + j * self.env_width
         
         self.terrain_type[i, j] = terrain.idx
-
-        #! parkour 暂时把这个去了
-        # self.goal[i,j,0] = terrain.goal[0] + i * self.env_length
-        # self.goal[i,j,1] = terrain.goal[1] + j * self.env_width
+        
         
     def dualobs_terrain_goal(self, 
                             terrain, 
-                            noise_max_height,
-                            noise_min_height,
-                            stone_size,
-                            stone_distance,
-                            height_range = [0.2, 0.6],
-                            platform_size = 2.0
+                            num_row,
+                            num_col,
+                            terrain_stone_distance,
+                            air_stone_distance,
+                            # height_range = [0.2, 0.6],
+                            terrain_stone_size = [0.2,0.4],
+                            terrain_height_range = [0.1, 0.25],   # 障碍物的高度
+                            air_stone_size = [0.35,0.55],  # 每个障碍物的size
+                            ceiling_height_range = [0.25, 0.35],   # 障碍物的高度
+                            platform_size = 2.0,
+                            if_flat_ = False
                             ):
-        
-          
 
-        # stone_size = [0.2,0.4]  # 每个障碍物的size
-        stone_size_min = int(stone_size[0] / terrain.horizontal_scale)
-        stone_size_max = int(stone_size[1] / terrain.horizontal_scale)
-        # stone_distance = [0.5,1.5]  # 两个障碍物之间的距离
-        stone_distance_min = int(stone_distance[0] / terrain.horizontal_scale)
-        stone_distance_max = int(stone_distance[1] / terrain.horizontal_scale)
-        # height_range = [0.2, 0.4]   # 障碍物的高度
-        height_range_min = int(height_range[0] / terrain.vertical_scale)
-        height_range_max = int(height_range[1] / terrain.vertical_scale)
-        
-        x_rand = [-0.1, 0.1]
-        x_rand_min = round( x_rand[0] / terrain.horizontal_scale)
-        x_rand_max = round( x_rand[1] / terrain.horizontal_scale)
-        
-        platform_size = int(platform_size / terrain.horizontal_scale)
-        
-        #! 生成terrain obstacle
+        if not if_flat_:
 
-        start_x = platform_size # 上方obstacle开始位置
-        obstacle_length = round(3 / terrain.horizontal_scale)
-        end_x = start_x + obstacle_length   # 上方obstacle结束位置
-        start_y = np.random.randint(stone_distance_min, stone_distance_max)
-        
-        while start_x < end_x:
-            stone_size = np.random.randint(stone_size_min, stone_size_max)
-            stone_distance = np.random.randint(stone_distance_min, stone_distance_max)
-            height = np.random.randint(height_range_min, height_range_max)
+            stone_size_min = int(terrain_stone_size[0] / terrain.horizontal_scale)
+            stone_size_max = int(terrain_stone_size[1] / terrain.horizontal_scale)
+            # stone_distance = [0.5,1.5]  # 两个障碍物之间的距离
+            stone_distance_min = int(terrain_stone_distance[0] / terrain.horizontal_scale)
+            stone_distance_max = int(terrain_stone_distance[1] / terrain.horizontal_scale)
             
-            stop_x = min(terrain.width, start_x + stone_size)
-            start_y = stone_distance
-            stop_y = stone_distance + stone_size
-            terrain.height_field_raw[start_x: stop_x, start_y: stop_y] = height
-            start_y = stop_y
+            height_range_min = int(terrain_height_range[0] / terrain.vertical_scale)
+            height_range_max = int(terrain_height_range[1] / terrain.vertical_scale)
             
-            while start_y < terrain.length - stone_distance_max:
+            x_rand = [-0.1, 0.1]
+            x_rand_min = round( x_rand[0] / terrain.horizontal_scale)
+            x_rand_max = round( x_rand[1] / terrain.horizontal_scale)
+            
+            platform_size = int(platform_size / terrain.horizontal_scale)
+            
+            #! 生成terrain obstacle
+
+            start_x = platform_size # 上方obstacle开始位置
+            obstacle_length = round(3 / terrain.horizontal_scale)   # obstacle的总长
+            end_x = start_x + obstacle_length   # 上方obstacle结束位置
+            start_y = np.random.randint(stone_distance_min, stone_distance_max)
+            
+            while start_x < end_x:
                 stone_size = np.random.randint(stone_size_min, stone_size_max)
                 stone_distance = np.random.randint(stone_distance_min, stone_distance_max)
                 height = np.random.randint(height_range_min, height_range_max)
                 
-                obstacle_rand_x = np.random.randint(x_rand_min, x_rand_max)
-                obstacle_start_x = start_x + obstacle_rand_x
-                obstacle_end_x = obstacle_start_x + stone_size
-                
-                start_y += stone_distance
+                stop_x = min(terrain.width, start_x + stone_size)
+                start_y = stone_distance
                 stop_y = start_y + stone_size
-                terrain.height_field_raw[obstacle_start_x: obstacle_end_x, start_y: stop_y] = height
+                terrain.height_field_raw[start_x: stop_x, start_y: stop_y] = height
+                start_y = stop_y
                 
-            start_x += stone_size + stone_distance  # 再加到下一行
-        
-        #! 生层ceiling obstacle  
-        
-        start_x = platform_size # 上方obstacle开始位置
-        obstacle_length = round(3 / terrain.horizontal_scale)
-        end_x = start_x + obstacle_length   # 上方obstacle结束位置
-        start_y = np.random.randint(stone_distance_min, stone_distance_max)
-        
-        while start_x < end_x:
-            stone_size = np.random.randint(stone_size_min, stone_size_max)
-            stone_distance = np.random.randint(stone_distance_min, stone_distance_max)
-            height = np.random.randint(height_range_min, height_range_max)
+                while start_y < terrain.length - (stone_size_max+stone_distance):    # 固定x,递增y
+                    stone_size = np.random.randint(stone_size_min, stone_size_max)
+                    stone_distance = np.random.randint(stone_distance_min, stone_distance_max)
+                    height = np.random.randint(height_range_min, height_range_max)
+                    
+                    obstacle_rand_x = np.random.randint(x_rand_min, x_rand_max)
+                    obstacle_start_x = start_x + obstacle_rand_x
+                    obstacle_end_x = obstacle_start_x + stone_size
+                    
+                    start_y += stone_distance
+                    stop_y = start_y + stone_size
+                    terrain.height_field_raw[obstacle_start_x: obstacle_end_x, start_y: stop_y] = height
+                    start_y = stop_y
+                    
+                    
+                start_x += stone_size + stone_distance  # 再加到下一行
             
-            stop_x = min(terrain.width, start_x + stone_size)
-            start_y = stone_distance
-            stop_y = stone_distance + stone_size
-            terrain.ceiling_height_raw[start_x: stop_x, start_y: stop_y] = height
-            start_y = stop_y
+            #! 生层ceiling obstacle  
+            height_range_min = int(ceiling_height_range[0] / terrain.vertical_scale)
+            height_range_max = int(ceiling_height_range[1] / terrain.vertical_scale)
             
-            while start_y < terrain.length - stone_distance_max:
+            stone_size_min = int(air_stone_size[0] / terrain.horizontal_scale)
+            stone_size_max = int(air_stone_size[1] / terrain.horizontal_scale)
+            
+            stone_distance_min = int(air_stone_distance[0] / terrain.horizontal_scale)
+            stone_distance_max = int(air_stone_distance[1] / terrain.horizontal_scale)
+            
+            # subterrain的坐标
+            env_start_x = num_row * self.length_per_env_pixels
+            # end_x = (num_row + 1) * self.length_per_env_pixels
+            env_start_y = num_col * self.width_per_env_pixels
+            env_end_y = (num_col + 1) * self.width_per_env_pixels
+            
+            obs_start_x = platform_size # 上方obstacle开始位置
+            obstacle_length = round(3 / terrain.horizontal_scale)
+            obs_end_x = obs_start_x + obstacle_length   # 上方obstacle结束位置
+            obs_start_y = np.random.randint(stone_distance_min, stone_distance_max)
+            
+            while obs_start_x < obs_end_x:
                 stone_size = np.random.randint(stone_size_min, stone_size_max)
                 stone_distance = np.random.randint(stone_distance_min, stone_distance_max)
-                height = np.random.randint(height_range_min, height_range_max)
+                obs_height = np.random.randint(height_range_min, height_range_max)
                 
-                obstacle_rand_x = np.random.randint(x_rand_min, x_rand_max)
-                obstacle_start_x = start_x + obstacle_rand_x
-                obstacle_end_x = obstacle_start_x + stone_size
+                obs_stop_x = min(terrain.width, obs_start_x + stone_size)
+                obs_start_y = np.random.randint(0,stone_distance_min)
+                obs_stop_y = obs_start_y + stone_size
                 
-                start_y += stone_distance
-                stop_y = start_y + stone_size
-                terrain.ceiling_height_raw[obstacle_start_x: obstacle_end_x, start_y: stop_y] = height
+                #! 把trimsh加到sim
+                # terrain.ceiling_height_raw[start_x: stop_x, start_y: stop_y] = height
+                upper_trimesh = box_trimesh(
+                    np.array([stone_size*terrain.horizontal_scale, stone_size*terrain.horizontal_scale, stone_size*terrain.horizontal_scale], dtype=np.float32),    # size
+                    np.array([(obs_start_x+obs_stop_x)/2*terrain.horizontal_scale, (obs_start_y+obs_stop_y)/2*terrain.horizontal_scale, obs_height*terrain.vertical_scale+stone_size/2*terrain.horizontal_scale], dtype=np.float32)  # pos
+                )
+                self.add_trimesh_to_sim(
+                    upper_trimesh,
+                    np.array([env_start_x * terrain.horizontal_scale,env_start_y * terrain.horizontal_scale,0]))
                 
-            start_x += stone_size + stone_distance  # 再加到下一行
-        
+                #! add to map
+                record_start_x = int(self.border + env_start_x + obs_start_x)
+                record_stop_x = int(self.border + env_start_x + obs_stop_x)
+                record_start_y = int(self.border + env_start_y + obs_start_y)
+                record_stop_y = int(self.border + env_start_y + obs_stop_y)
+                self.ceiling_height_raw[ record_start_x: record_stop_x, record_start_y:record_stop_y] = obs_height
+                
+                obs_start_y = obs_stop_y
+                
+                while obs_start_y < terrain.length - stone_distance_max:    #! 固定obs_start_x， 递增obs_start_y
+                # while start_y < terrain.length - (stone_size_max+stone_distance):
+                # while obs_start_y < terrain.length:
+                    stone_size = np.random.randint(stone_size_min, stone_size_max)
+                    stone_distance = np.random.randint(stone_distance_min, stone_distance_max)
+                    obs_height = np.random.randint(height_range_min, height_range_max)
+                    
+                    obstacle_rand_x = np.random.randint(x_rand_min, x_rand_max)
+                    obstacle_start_x = obs_start_x + obstacle_rand_x
+                    obstacle_stop_x = obstacle_start_x + stone_size
+                    
+                    obs_start_y += stone_distance
+                    obs_stop_y = obs_start_y + stone_size
+                    # terrain.ceiling_height_raw[obstacle_start_x: obstacle_end_x, start_y: stop_y] = height
+
+                    upper_trimesh = box_trimesh(
+                        np.array([stone_size*terrain.horizontal_scale, stone_size*terrain.horizontal_scale, stone_size*terrain.horizontal_scale], dtype=np.float32),    # size
+                        np.array([(obstacle_start_x+obstacle_stop_x)/2*terrain.horizontal_scale, (obs_start_y+obs_stop_y)/2*terrain.horizontal_scale, obs_height*terrain.vertical_scale+stone_size/2*terrain.horizontal_scale], dtype=np.float32)  # pos
+                    )
+                    self.add_trimesh_to_sim(
+                        upper_trimesh,
+                        np.array([env_start_x * terrain.horizontal_scale,env_start_y * terrain.horizontal_scale,0]))
+                    
+                    #! add to map
+                    record_start_x = int(self.border + env_start_x + obstacle_start_x)
+                    record_stop_x = int(self.border + env_start_x + obstacle_stop_x)
+                    record_start_y = int(self.border + env_start_y + obs_start_y)
+                    record_stop_y = int(self.border + env_start_y + obs_stop_y)
+                    self.ceiling_height_raw[ record_start_x: record_stop_x, record_start_y:record_stop_y] = obs_height
+                    
+                    obs_start_y = obs_stop_y
+                    
+                obs_start_x += stone_size + stone_distance  # 再加到下一行
+            
             
         goal = [terrain.width * terrain.horizontal_scale - 1.0 , terrain.length * 1/2 * terrain.horizontal_scale]
         terrain.goal = goal
@@ -567,7 +624,7 @@ class Terrainvls:
                 upper_trimesh,
                 np.array([start_x * terrain.horizontal_scale,(start_y+end_y)/2 * terrain.horizontal_scale,0]))
             
-            obstacle_start_x = int(self.border + start_x + (platform_length)/terrain.horizontal_scale + x_rand)
+            obstacle_start_x = int(self.border + start_x + (platform_length)/terrain.horizontal_scale + x_rand) # 单位是像素
             obstacle_end_x = int(self.border + start_x + (platform_length)/terrain.horizontal_scale + x_rand + crawl_length/terrain.horizontal_scale)
             obstacle_start_y = int(self.border + (start_y+end_y)/2 - crawl_width/2/terrain.horizontal_scale)
             obstacle_end_y = int(self.border + (start_y+end_y)/2 + crawl_width/2/terrain.horizontal_scale)
@@ -613,12 +670,12 @@ class Terrainvls:
         terrain.goal = goal
             
         #* pad edges
-        # pad_width = int(0.1 // terrain.horizontal_scale)
+        pad_width = int(0.1 // terrain.horizontal_scale)
         # pad_height = int(0.5 // terrain.vertical_scale)
-        # terrain.height_field_raw[:, :pad_width] = pad_height
-        # terrain.height_field_raw[:, -pad_width:] = pad_height
+        terrain.height_field_raw[:, :pad_width] = 1000
+        # terrain.height_field_raw[:, -pad_width:] = 1000
         # terrain.height_field_raw[:pad_width, :] = pad_height
-        # terrain.height_field_raw[-pad_width:, :] = pad_height
+        # terrain.height_field_raw[-pad_width:, :] = 1000
         
         return terrain
 
@@ -1015,26 +1072,28 @@ class Terrainvls:
 
     
         # 中间位置
-        mid_y = terrain.length // 2  # length is actually y width
-        platform_len = round(platform_len / terrain.horizontal_scale)
+        # mid_y = terrain.length // 2  # length is actually y width
+        # platform_len = round(platform_len / terrain.horizontal_scale)
         
-        log_length_min = round(log_length_range[0] / terrain.horizontal_scale)
-        log_length_max = round(log_length_range[1] / terrain.horizontal_scale)
-        half_log_width = round(log_width / 2 / terrain.horizontal_scale)
-        y_rand_min = round(y_rand_range[0] / terrain.horizontal_scale)
-        y_rand_max = round(y_rand_range[1] / terrain.horizontal_scale)
+        # log_length_min = round(log_length_range[0] / terrain.horizontal_scale)
+        # log_length_max = round(log_length_range[1] / terrain.horizontal_scale)
+        # half_log_width = round(log_width / 2 / terrain.horizontal_scale)
+        # y_rand_min = round(y_rand_range[0] / terrain.horizontal_scale)
+        # y_rand_max = round(y_rand_range[1] / terrain.horizontal_scale)
         
         
-        log_length_ = np.random.randint(log_length_min, log_length_max)
-        y_rand_ = np.random.randint(y_rand_min, y_rand_max)
+        # log_length_ = np.random.randint(log_length_min, log_length_max)
+        # y_rand_ = np.random.randint(y_rand_min, y_rand_max)
         
-        if not flat:
-            terrain.height_field_raw[platform_len:platform_len+log_length_,:mid_y+y_rand_-half_log_width] = gap_depth
-            terrain.height_field_raw[platform_len:platform_len+log_length_,mid_y+y_rand_+half_log_width:] = gap_depth
+        # if not flat:
+        #     terrain.height_field_raw[platform_len:platform_len+log_length_,:mid_y+y_rand_-half_log_width] = gap_depth
+        #     terrain.height_field_raw[platform_len:platform_len+log_length_,mid_y+y_rand_+half_log_width:] = gap_depth
             
-        # platform
-        terrain.height_field_raw[0:platform_len, :] = 0
-        terrain.height_field_raw[-platform_len:, :] = 0
+        # # platform
+        # terrain.height_field_raw[0:platform_len, :] = 0
+        # terrain.height_field_raw[-platform_len:, :] = 0
+        
+        terrain.height_field_raw = 100
         
             
         goal = np.zeros((1,2))

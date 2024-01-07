@@ -284,9 +284,9 @@ class LeggedV2(BaseTask):
             
             if not self.cfg.depth.use_camera:
                 self._draw_height_samples()
-                self._draw_feet()
-                self._draw_coord()
-                self._draw_goals()
+                # self._draw_feet()
+                # self._draw_coord()
+                # self._draw_goals()
 
             
             if self.cfg.depth.use_camera:
@@ -1431,7 +1431,8 @@ class LeggedV2(BaseTask):
 
         base_pos = (self.root_states[self.robot_actor_idxs[i], :3]).cpu().numpy()
         
-        terrain_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(1, 1, 0))
+        # terrain_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(1, 1, 0))
+        terrain_sphere_geom = gymutil.WireframeSphereGeometry(0.015, 8, 8, None, color=(1, 1, 0))
         terrain_heights_z = self.measured_terrain_heights_z[i].cpu().numpy()    
         terrain_height_points_xyyaw = quat_apply_yaw(self.base_quat[i].repeat(terrain_heights_z.shape[0]), self.terrain_scanpoints_xybase[i]).cpu().numpy() # [132,3]
         for j in range(terrain_heights_z.shape[0]):
@@ -1441,41 +1442,48 @@ class LeggedV2(BaseTask):
             sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
             gymutil.draw_lines(terrain_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
         
-        obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(0, 1, 1))
-        obstacle_heights_z = self.measured_obstacle_heights_z[i].cpu().numpy()
-        obstacle_height_points_xyyaw = quat_apply_yaw(self.base_quat[i].repeat(obstacle_heights_z.shape[0]), self.ceiling_scanpoints_xybase[i]).cpu().numpy() # [132,3]
-        for j in range(obstacle_heights_z.shape[0]):
-            x = obstacle_height_points_xyyaw[j, 0] + base_pos[0]
-            y = obstacle_height_points_xyyaw[j, 1] + base_pos[1]
-            z = obstacle_heights_z[j]
-            sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
-            if z != 0:
-                gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
+        # # obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(0, 1, 1))
+        # obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 10, 10, None, color=(0, 0, 1))
+        # obstacle_heights_z = self.measured_obstacle_heights_z[i].cpu().numpy()
+        # obstacle_height_points_xyyaw = quat_apply_yaw(self.base_quat[i].repeat(obstacle_heights_z.shape[0]), self.ceiling_scanpoints_xybase[i]).cpu().numpy() # [132,3]
+        # for j in range(obstacle_heights_z.shape[0]):
+        #     x = obstacle_height_points_xyyaw[j, 0] + base_pos[0]
+        #     y = obstacle_height_points_xyyaw[j, 1] + base_pos[1]
+        #     z = obstacle_heights_z[j]
+        #     if z == 0:
+        #         z = 0.5
+            
+        #     sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
+        #     # if z != 0:
+        #     #     gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
+            
+                
+        #     gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
     
     def _draw_goals(self):
         sphere_geom = gymutil.WireframeSphereGeometry(0.1, 32, 32, None, color=(1, 0, 0))
 
         # env goal
-        goal = self.env_goal[self.lookat_id].cpu().numpy()        
-        goal_xy = goal[:2] + self.terrain.cfg.border_size
-        pts = (goal_xy/self.terrain.cfg.horizontal_scale).astype(int)
-        goal_z = self.terrain_height_samples[pts[0], pts[1]].cpu().item() * self.terrain.cfg.vertical_scale
-        pose = gymapi.Transform(gymapi.Vec3(goal[0], goal[1], goal_z), r=None)
-        gymutil.draw_lines(sphere_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+        # goal = self.env_goal[self.lookat_id].cpu().numpy()        
+        # goal_xy = goal[:2] + self.terrain.cfg.border_size
+        # pts = (goal_xy/self.terrain.cfg.horizontal_scale).astype(int)
+        # goal_z = self.terrain_height_samples[pts[0], pts[1]].cpu().item() * self.terrain.cfg.vertical_scale
+        # pose = gymapi.Transform(gymapi.Vec3(goal[0], goal[1], goal_z), r=None)
+        # gymutil.draw_lines(sphere_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
 
         
         # robot2target_world
-        sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 0, 1))
+        # sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 0, 1))
     
-        robot2target_vec = self.env_goal[self.lookat_id, :3] - self.root_states[self.robot_actor_idxs[self.lookat_id], :3]
-        norm = torch.norm(robot2target_vec, dim=-1, keepdim=True)
-        target_vec_norm = robot2target_vec / (norm + 1e-5)
+        # robot2target_vec = self.env_goal[self.lookat_id, :3] - self.root_states[self.robot_actor_idxs[self.lookat_id], :3]
+        # norm = torch.norm(robot2target_vec, dim=-1, keepdim=True)
+        # target_vec_norm = robot2target_vec / (norm + 1e-5)
         
-        for i in range(10):            
-            pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :3] + (norm/10)*(i+1) * target_vec_norm[:3]
-            pose_arrow=pose_arrow.cpu().numpy()
-            pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
-            gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+        # for i in range(10):            
+        #     pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :3] + (norm/10)*(i+1) * target_vec_norm[:3]
+        #     pose_arrow=pose_arrow.cpu().numpy()
+        #     pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
+        #     gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
             
             
         # robotvel_world
@@ -1517,8 +1525,8 @@ class LeggedV2(BaseTask):
                 # draw foot force
                 ff_norm = (torch.norm(feet_force[self.lookat_id, i, :3]) + 1e-5)
                 ff_vec = feet_force[self.lookat_id, i, :3] / ff_norm
-                for j in range(10):
-                    pose_arrow = ff_norm/4000 * (j+1) * ff_vec + feet_pos[self.lookat_id, i, :3]
+                for j in range(30):
+                    pose_arrow = ff_norm/10000 * (j+1) * ff_vec + feet_pos[self.lookat_id, i, :3]
                     pose_arrow = pose_arrow.cpu().numpy()
                     pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
                     gymutil.draw_lines(ff_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
@@ -1658,8 +1666,7 @@ class LeggedV2(BaseTask):
         
         self.rew_container_task[~take_effect_flag] = 0.
         
-        # temp = 1 / (1 + torch.norm(self.robot2target_world, dim=-1))\
-        # 只需要xy坐标上接近就行了
+        # temp = 1 / (1 + torch.norm(self.robot2target_world, dim=-1))\  只需要xy坐标上接近就行了
         temp = 1 / (1 + torch.norm(self.robot2target_world[:,:2], dim=-1))
         self.rew_container_task[take_effect_flag] = \
             temp[take_effect_flag] / (self.max_episode_length_s - self.task_episode_length_s)   # 1 / (1 + robot2target_world + [] )
@@ -1675,7 +1682,8 @@ class LeggedV2(BaseTask):
         # take_effect_flag = self.rew_container_task > 0.5
         
         # 距离目标点比较近的时候，把exploration_vel detach掉
-        take_effect_flag = (torch.norm(self.robot2target_world[:,:2], dim=-1) < self.cfg.rewards.goal_threshold) 
+        #! 满足任意一个条件时，exploration_vel失效
+        take_effect_flag = (torch.norm(self.robot2target_world[:,:2], dim=-1) < self.cfg.rewards.goal_threshold) | (self.episode_length_buf > self.task_episode_length)
         self.rew_container_exploration[take_effect_flag] = 0.
         
         norm = torch.norm(self.robot2target_world[:,:2], dim=-1, keepdim=True)
@@ -1687,7 +1695,8 @@ class LeggedV2(BaseTask):
         temp = torch.sum(target_vec_norm * cur_vel, dim=-1)
         
         # 阈值的最大速度是1m/s 现在环境变短了，且完成任务的时间变长了，没必要阈值给1.0，太快了
-        shreshold = torch.ones_like(temp, dtype=torch.float, device=self.device, requires_grad=False) * 0.7
+        # shreshold = torch.ones_like(temp, dtype=torch.float, device=self.device, rerquires_grad=False) * 0.7
+        shreshold = torch.ones_like(temp, dtype=torch.float, device=self.device) * 0.7
         temp = torch.minimum(temp, shreshold)
         
         self.rew_container_exploration[~take_effect_flag] = temp[~take_effect_flag]
@@ -1721,38 +1730,14 @@ class LeggedV2(BaseTask):
     def _reward_staystill_atgoal(self):
         # 机器人到达goal后，应该保持静止站立
         
-        # take_effect_flag = (torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.2) & (self.episode_length_buf > self.task_episode_length)  # 靠近goal后，保持静止站立姿态
-        # take_effect_flag = (torch.norm(self.robot2target_world[:,:2], dim=-1) < self.cfg.rewards.goal_threshold) 
-        # print("distance: ", torch.norm(self.robot2target_world[:,:2], dim=-1))
-        
         dof_error = torch.sum(torch.square(self.dof_pos - self.default_dof_pos), dim=1)
-        # height_error = torch.abs(self.root_states[:, 2] - 0.4) 
-        # upright_error = torch.sum(torch.square(self.projected_gravity_base[:, :2]), dim=1)
+
         contact_error = torch.sum(~self.contact_filt)
-        # vel_error = torch.sum(torch.square(self.base_lin_vel_world[:,:2]), dim=1)
         yawvel_error = torch.norm(self.base_ang_vel_base[:,2], dim=-1)
         
-        # print("dof_error: ", dof_error)
-        # print("contact_error: ", contact_error)
-        # print("yawvel_error: ", yawvel_error)
-
-        # sum = dof_error + height_error + upright_error*1000 + 0.4*contact_error + 0.6*vel_error
-        # sum = (dof_error + contact_error) * (torch.norm(self.robot2target_world[:,:2], dim=-1) < self.cfg.rewards.goal_threshold) + \
-        #         0.5*yawvel_error * (torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.5)
         sum = dof_error + 0.4*contact_error + 0.5*yawvel_error
-        
-        # print("sum: ", sum)
-        # sum越小,reward越大
+
         reward = 1 / (1 + sum) * (torch.norm(self.robot2target_world[:,:2], dim=-1) < self.cfg.rewards.goal_threshold) 
-        # reward = torch.exp(-sum)
-        # print("standstill reward: ", reward)
-        
-        # self.rew_container_still[take_effect_flag] = reward[take_effect_flag]
-        # self.rew_container_still[~take_effect_flag] = 0.
-        # if take_effect_flag:
-        #     print("standstill reward: ", self.rew_container_still)
-                                
-        # return self.rew_container_still
         
         return reward
     

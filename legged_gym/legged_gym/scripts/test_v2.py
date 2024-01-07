@@ -19,19 +19,19 @@ def test_env(args):
     # env_cfg.env.num_envs = env_cfg.terrain.num_rpillar_xows * env_cfg.terrain.num_cols
     env_cfg.env.num_envs = 1
     
-    env_cfg.terrain.border_size = 1.0
+    env_cfg.terrain.border_size = 5.0
     env_cfg.terrain.terrain_dict = {
                         "step": 0.0, # proportions[0]
                         "gap": 0.0,  # proportions[1]
                         "slope": 0.0,
                         "stair": 0.0, 
-                        "discrete": 1.0, 
+                        "discrete": 0.0, 
                         "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "dual": 0.0
+                        "dual": 1.0
                         }
     env_cfg.terrain.terrain_proportions = list(env_cfg.terrain.terrain_dict.values())
     env_cfg.terrain.curriculum = True

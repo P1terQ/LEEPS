@@ -149,16 +149,8 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
             env_cfg.terrain.num_cols = env_cfg.depth.camera_terrain_num_cols
             # env_cfg.terrain.max_error = env_cfg.terrain.max_error_camera
             env_cfg.terrain.horizontal_scale = env_cfg.terrain.horizontal_scale_camera
-            env_cfg.terrain.simplify_grid = True
-            
-            # # todo 这个terrain类型之后需要修改
-            # env_cfg.terrain.terrain_dict["parkour_hurdle"] = 0.2
-            # env_cfg.terrain.terrain_dict["parkour_flat"] = 0.05
-            # env_cfg.terrain.terrain_dict["parkour_gap"] = 0.2
-            # env_cfg.terrain.terrain_dict["parkour_step"] = 0.2
-            # env_cfg.terrain.terrain_dict["demo"] = 0.15
-            # env_cfg.terrain.terrain_proportions = list(env_cfg.terrain.terrain_dict.values())
-            
+            env_cfg.terrain.simplify_grid = env_cfg.terrain.simplify_grid
+
     if cfg_train is not None:
         if args.seed is not None:
             cfg_train.seed = args.seed

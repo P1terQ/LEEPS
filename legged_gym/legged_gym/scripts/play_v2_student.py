@@ -15,19 +15,19 @@ import time
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     
-    env_cfg.depth.camera_num_envs = 10
-    env_cfg.depth.camera_terrain_num_rows = 2
-    env_cfg.depth.camera_terrain_num_cols = 10
+    env_cfg.depth.camera_num_envs = 1
+    env_cfg.depth.camera_terrain_num_rows = 10
+    env_cfg.depth.camera_terrain_num_cols = 1
     env_cfg.terrain.terrain_dict = {
-                        "step": 0.1, # proportions[0]
-                        "gap": 0.1,  # proportions[1]
-                        "slope": 0.1,
-                        "stair": 0.1, 
-                        "pillar": 0.1, 
+                        "step": 0.0, # proportions[0]
+                        "gap": 0.0,  # proportions[1]
+                        "slope": 0.0,
+                        "stair": 0.0, 
+                        "pillar": 0.0, 
                         "flat": 0.0,       # proportions[5]
-                        "steppingstones": 0.1, # proportions[6]
-                        "crawl": 0.1,     # proportions[7]
-                        "log": 0.3,
+                        "steppingstones": 1.0, # proportions[6]
+                        "crawl": 0.0,     # proportions[7]
+                        "log": 0.0,
                         "crack": 0.0,
                         "pyramid upstair": 0.0,
                         "pyramid gap": 0.0,
@@ -35,6 +35,7 @@ def play(args):
                         }   
     env_cfg.terrain.curriculum = True
     env_cfg.terrain.max_init_terrain_level = 1
+    env_cfg.terrain.simplify_grid = False
     # env_cfg.terrain.curriculum = False
        
     env_cfg.terrain.terrain_proportions = list(env_cfg.terrain.terrain_dict.values())
