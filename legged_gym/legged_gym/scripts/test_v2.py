@@ -14,10 +14,11 @@ def test_env(args):
     # env_cfg.terrain.num_rows = max(2, env_cfg.terrain.max_init_terrain_level+1)    #!
     # env_cfg.terrain.num_rows = 10
     # env_cfg.terrain.num_cols = 10
-    env_cfg.terrain.num_rows = 10   #!
+    env_cfg.terrain.num_rows = 3   #!
     env_cfg.terrain.num_cols = 1
     # env_cfg.env.num_envs = env_cfg.terrain.num_rpillar_xows * env_cfg.terrain.num_cols
-    env_cfg.env.num_envs = 1
+    env_cfg.env.num_envs = 3
+    env_cfg.terrain.max_init_terrain_level = 3
     
     env_cfg.terrain.border_size = 5.0
     env_cfg.terrain.terrain_dict = {

@@ -69,18 +69,22 @@ class LeggedV2(BaseTask):
         
         #! 可视化环境中的x_edges和y_edges
         # self.gym.clear_lines(self.viewer)
-        # x_edge_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(0, 1, 0))
-        # for i in range(self.x_edge_mask.shape[0]):
-        #     for j in range(self.x_edge_mask.shape[1]):
+        # x_edge_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(1, 0, 0))
+        # # for i in range(self.x_edge_mask.shape[0]):
+        #     # for j in range(self.x_edge_mask.shape[1]):
+        # for i in range(self.terrain.heightsamples.shape[0]):
+        #     for j in range(self.terrain.heightsamples.shape[1]):
         #         if self.x_edge_mask[i,j]:
-        #             pose = gymapi.Transform(gymapi.Vec3(i * self.cfg.terrain.horizontal_scale, j * self.cfg.terrain.horizontal_scale, self.terrain.heightsamples[i,j] * self.cfg.terrain.vertical_scale), r=None)
+        #             pose = gymapi.Transform(gymapi.Vec3(i * self.cfg.terrain.horizontal_scale - self.cfg.terrain.border_size, j * self.cfg.terrain.horizontal_scale - self.cfg.terrain.border_size, self.terrain.heightsamples[i,j] * self.cfg.terrain.vertical_scale), r=None)
         #             gymutil.draw_lines(x_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
         
         # y_edge_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(1, 0, 0))
-        # for i in range(self.y_edge_mask.shape[0]):
-        #     for j in range(self.y_edge_mask.shape[1]):
+        # # for i in range(self.y_edge_mask.shape[0]):
+        # #     for j in range(self.y_edge_mask.shape[1]):
+        # for i in range(self.terrain.heightsamples.shape[0]):
+        #     for j in range(self.terrain.heightsamples.shape[1]):
         #         if self.y_edge_mask[i,j]:
-        #             pose = gymapi.Transform(gymapi.Vec3(i * self.cfg.terrain.horizontal_scale, j * self.cfg.terrain.horizontal_scale, self.terrain.heightsamples[i,j] * self.cfg.terrain.vertical_scale), r=None)
+        #             pose = gymapi.Transform(gymapi.Vec3(i * self.cfg.terrain.horizontal_scale - self.cfg.terrain.border_size, j * self.cfg.terrain.horizontal_scale - self.cfg.terrain.border_size, self.terrain.heightsamples[i,j] * self.cfg.terrain.vertical_scale), r=None)
         #             gymutil.draw_lines(y_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
         # print("edge visulization done")
 
@@ -283,10 +287,10 @@ class LeggedV2(BaseTask):
             self.gym.clear_lines(self.viewer)
             
             if not self.cfg.depth.use_camera:
-                self._draw_height_samples()
-                # self._draw_feet()
-                # self._draw_coord()
-                # self._draw_goals()
+            #     self._draw_height_samples()
+                self._draw_feet()
+            #     # self._draw_coord()
+            #     self._draw_goals()
 
             
             if self.cfg.depth.use_camera:
@@ -319,6 +323,7 @@ class LeggedV2(BaseTask):
         self.height_cutoff = self.root_states[self.robot_actor_idxs, 2] < -0.1   # 掉坑里去了也要terminatin
         # self.height_cutoff = torch.zeros((self.num_envs, ), dtype=torch.bool, device=self.device)
 
+        #! play的时候可以把contact_termination去掉
         self.reset_buf |= self.contact_termination_buf
         self.reset_buf |= self.roll_cutoff
         self.reset_buf |= self.pitch_cutoff
@@ -342,9 +347,9 @@ class LeggedV2(BaseTask):
             return
         
         # update terrain curriculum
-        if self.cfg.terrain.curriculum: # todo 先把走路训好，之后加上Manipulation
+        if self.cfg.terrain.curriculum: 
             # 更新地形的难度
-            self._update_terrain_curriculum(env_ids)        # todo fixme
+            self._update_terrain_curriculum(env_ids)      
             
         # 每次在一整个episode结束后再更新command curriculum
         if self.cfg.commands.curriculum and (self.common_step_counter % self.max_episode_length==0):    
@@ -1362,6 +1367,8 @@ class LeggedV2(BaseTask):
             
             #                                  min      max               shape
             self.terrain_levels = torch.randint(0, max_init_level+1, (self.num_envs,), device=self.device)  # 行随机分布
+            # self.terrain_levels = torch.arange(self.num_envs, device=self.device) % (max_init_level) 
+            # print("terrain_levels: ", self.terrain_levels)
             
             # types则是按照顺序分配到每一列
             self.terrain_types = torch.div(torch.arange(self.num_envs, device=self.device), (self.num_envs/self.cfg.terrain.num_cols), rounding_mode='floor').to(torch.long)
@@ -1390,7 +1397,7 @@ class LeggedV2(BaseTask):
             self.env_origins[:, 2] = 0.
 
     def _parse_cfg(self, cfg):
-        self.dt = self.cfg.control.decimation * self.sim_params.dt
+        self.dt = self.cfg.control.decimation * self.sim_params.dt  #! 4 * 0.005 = 0.2
         self.obs_scales = self.cfg.normalization.obs_scales
         
         self.reward_scales = class_to_dict(self.cfg.rewards.scales) # convert reward scale class to dict 
@@ -1431,7 +1438,8 @@ class LeggedV2(BaseTask):
 
         base_pos = (self.root_states[self.robot_actor_idxs[i], :3]).cpu().numpy()
         
-        # terrain_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(1, 1, 0))
+        #! terrain heightpoints
+        terrain_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(1, 1, 0))
         terrain_sphere_geom = gymutil.WireframeSphereGeometry(0.015, 8, 8, None, color=(1, 1, 0))
         terrain_heights_z = self.measured_terrain_heights_z[i].cpu().numpy()    
         terrain_height_points_xyyaw = quat_apply_yaw(self.base_quat[i].repeat(terrain_heights_z.shape[0]), self.terrain_scanpoints_xybase[i]).cpu().numpy() # [132,3]
@@ -1442,37 +1450,56 @@ class LeggedV2(BaseTask):
             sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
             gymutil.draw_lines(terrain_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
         
-        # # obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(0, 1, 1))
-        # obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 10, 10, None, color=(0, 0, 1))
-        # obstacle_heights_z = self.measured_obstacle_heights_z[i].cpu().numpy()
-        # obstacle_height_points_xyyaw = quat_apply_yaw(self.base_quat[i].repeat(obstacle_heights_z.shape[0]), self.ceiling_scanpoints_xybase[i]).cpu().numpy() # [132,3]
-        # for j in range(obstacle_heights_z.shape[0]):
-        #     x = obstacle_height_points_xyyaw[j, 0] + base_pos[0]
-        #     y = obstacle_height_points_xyyaw[j, 1] + base_pos[1]
-        #     z = obstacle_heights_z[j]
-        #     if z == 0:
-        #         z = 0.5
+        #! apex heightpoints
+        # obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(0, 1, 1))
+        obstacle_sphere_geom = gymutil.WireframeSphereGeometry(0.02, 10, 10, None, color=(0, 0, 1))
+        obstacle_heights_z = self.measured_obstacle_heights_z[i].cpu().numpy()
+        obstacle_height_points_xyyaw = quat_apply_yaw(self.base_quat[i].repeat(obstacle_heights_z.shape[0]), self.ceiling_scanpoints_xybase[i]).cpu().numpy() # [132,3]
+        for j in range(obstacle_heights_z.shape[0]):
+            x = obstacle_height_points_xyyaw[j, 0] + base_pos[0]
+            y = obstacle_height_points_xyyaw[j, 1] + base_pos[1]
+            z = obstacle_heights_z[j]
             
-        #     sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
-        #     # if z != 0:
-        #     #     gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
+            if z == 0:
+                z = 0.5
+            sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
+            gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
+
+            
+            # if z != 0:
+            #     gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
+            
+            
+        #! 地形的边缘点，这个加上太卡了
+        # x_edge_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(0, 1, 0))
+        # for i in range(self.x_edge_mask.shape[0]):
+        #     for j in range(self.x_edge_mask.shape[1]):
+        #         if self.x_edge_mask[i,j]:
+        #             pose = gymapi.Transform(gymapi.Vec3(i * self.cfg.terrain.horizontal_scale, j * self.cfg.terrain.horizontal_scale, self.terrain.heightsamples[i,j] * self.cfg.terrain.vertical_scale), r=None)
+        #             gymutil.draw_lines(x_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+        
+        # y_edge_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(1, 0, 0))
+        # for i in range(self.y_edge_mask.shape[0]):
+        #     for j in range(self.y_edge_mask.shape[1]):
+        #         if self.y_edge_mask[i,j]:
+        #             pose = gymapi.Transform(gymapi.Vec3(i * self.cfg.terrain.horizontal_scale, j * self.cfg.terrain.horizontal_scale, self.terrain.heightsamples[i,j] * self.cfg.terrain.vertical_scale), r=None)
+        #             gymutil.draw_lines(y_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
             
                 
-        #     gymutil.draw_lines(obstacle_sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose)
     
     def _draw_goals(self):
         sphere_geom = gymutil.WireframeSphereGeometry(0.1, 32, 32, None, color=(1, 0, 0))
 
         # env goal
-        # goal = self.env_goal[self.lookat_id].cpu().numpy()        
-        # goal_xy = goal[:2] + self.terrain.cfg.border_size
-        # pts = (goal_xy/self.terrain.cfg.horizontal_scale).astype(int)
-        # goal_z = self.terrain_height_samples[pts[0], pts[1]].cpu().item() * self.terrain.cfg.vertical_scale
-        # pose = gymapi.Transform(gymapi.Vec3(goal[0], goal[1], goal_z), r=None)
-        # gymutil.draw_lines(sphere_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+        goal = self.env_goal[self.lookat_id].cpu().numpy()        
+        goal_xy = goal[:2] + self.terrain.cfg.border_size
+        pts = (goal_xy/self.terrain.cfg.horizontal_scale).astype(int)
+        goal_z = self.terrain_height_samples[pts[0], pts[1]].cpu().item() * self.terrain.cfg.vertical_scale
+        pose = gymapi.Transform(gymapi.Vec3(goal[0], goal[1], goal_z), r=None)
+        gymutil.draw_lines(sphere_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
 
         
-        # robot2target_world
+        #! robot2target_world
         # sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 0, 1))
     
         # robot2target_vec = self.env_goal[self.lookat_id, :3] - self.root_states[self.robot_actor_idxs[self.lookat_id], :3]
@@ -1486,51 +1513,66 @@ class LeggedV2(BaseTask):
         #     gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
             
             
-        # robotvel_world
-        sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 1, 1))
+        #! robotvel_world
+        # sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 1, 1))
         
-        robotvel_vec = self.base_lin_vel_world[self.lookat_id, :3]
-        norm = torch.norm(robotvel_vec, dim=-1, keepdim=True)
-        target_vec_norm = robotvel_vec / (norm + 1e-5)
-        for i in range(10):
+        # robotvel_vec = self.base_lin_vel_world[self.lookat_id, :3]
+        # norm = torch.norm(robotvel_vec, dim=-1, keepdim=True)
+        # target_vec_norm = robotvel_vec / (norm + 1e-5)
+        # for i in range(10):
 
-            # pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :2] + 0.4*(i+1) * target_vec_norm[:2]
-            pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :3] + norm/20*(i+1) * target_vec_norm[:3]
-            pose_arrow=pose_arrow.cpu().numpy()
-            pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
-            gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+        #     # pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :2] + 0.4*(i+1) * target_vec_norm[:2]
+        #     pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :3] + norm/20*(i+1) * target_vec_norm[:3]
+        #     pose_arrow=pose_arrow.cpu().numpy()
+        #     pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
+        #     gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
         
         
     def _draw_feet(self):
-        if hasattr(self, 'feet_at_edge'):
-            non_edge_geom = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 1, 0))    # green
-            edge_geom = gymutil.WireframeSphereGeometry(0.04, 16, 16, None, color=(1, 0, 1))    # 紫红色
+        #! draw feet at edge
+    #     non_edge_geom = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 1, 0))    # green
+    #     edge_geom = gymutil.WireframeSphereGeometry(0.04, 16, 16, None, color=(1, 0, 1))    # 紫红色
 
-            feet_pos = self.robot_link_states[:, self.feet_indices, :3] # [num_env, 4, 3]
+        feet_pos = self.robot_link_states[:, self.feet_indices, :3] # [num_env, 4, 3]
+        
+        ff_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(1, 0, 0))
+        feet_force = self.robot_contact_forces[:, self.feet_indices, :3] # [num_env, 4, 3]
+        
+        for i in range(4):
+    #         pose = gymapi.Transform(gymapi.Vec3(feet_pos[self.lookat_id, i, 0], feet_pos[self.lookat_id, i, 1], feet_pos[self.lookat_id, i, 2]), r=None)
             
-            ff_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(1, 0, 0))
-            feet_force = self.robot_contact_forces[:, self.feet_indices, :3] # [num_env, 4, 3]
-            
-            for i in range(4):
-                pose = gymapi.Transform(gymapi.Vec3(feet_pos[self.lookat_id, i, 0], feet_pos[self.lookat_id, i, 1], feet_pos[self.lookat_id, i, 2]), r=None)
-                
-                # draw if foot at edge
-                if self.feet_at_edge[self.lookat_id, i]:
-                    # gymutil.draw_lines(edge_geom, self.gym, self.viewer, self.envs[i], pose)
-                    gymutil.draw_lines(edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
-                else:
-                    # gymutil.draw_lines(non_edge_geom, self.gym, self.viewer, self.envs[i], pose)
-                    gymutil.draw_lines(non_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
-            
-                # draw foot force
-                ff_norm = (torch.norm(feet_force[self.lookat_id, i, :3]) + 1e-5)
-                ff_vec = feet_force[self.lookat_id, i, :3] / ff_norm
-                for j in range(30):
-                    pose_arrow = ff_norm/10000 * (j+1) * ff_vec + feet_pos[self.lookat_id, i, :3]
-                    pose_arrow = pose_arrow.cpu().numpy()
-                    pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
-                    gymutil.draw_lines(ff_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+    #         # draw if foot at edge
+    #         if self.feet_at_edge[self.lookat_id, i]:
+    #             # gymutil.draw_lines(edge_geom, self.gym, self.viewer, self.envs[i], pose)
+    #             gymutil.draw_lines(edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+    #         else:
+    #             # gymutil.draw_lines(non_edge_geom, self.gym, self.viewer, self.envs[i], pose)
+    #             gymutil.draw_lines(non_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+        
+            # draw foot force
+            ff_norm = (torch.norm(feet_force[self.lookat_id, i, :3]) + 1e-5)
+            ff_vec = feet_force[self.lookat_id, i, :3] / ff_norm
+            for j in range(15):
+                pose_arrow = ff_norm/10000 * (j+1) * ff_vec + feet_pos[self.lookat_id, i, :3]
+                pose_arrow = pose_arrow.cpu().numpy()
+                pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
+                gymutil.draw_lines(ff_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+                    
+        #! draw feet contact
+        non_contact_geom = gymutil.WireframeSphereGeometry(0.025, 16, 16, None, color=(0, 1, 0))
+        contact_geom = gymutil.WireframeSphereGeometry(0.025, 16, 16, None, color=(1, 0, 0)) 
+        
+        # feet_pos = self.robot_link_states[:, self.feet_indices, :3] # [num_env, 4, 3]
+                    
+        for i in range(4):
+            pose = gymapi.Transform(gymapi.Vec3(feet_pos[self.lookat_id, i, 0], feet_pos[self.lookat_id, i, 1], feet_pos[self.lookat_id, i, 2]), r=None)
 
+            if self.contact_filt[self.lookat_id, i]:
+                gymutil.draw_lines(contact_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+            else:
+                gymutil.draw_lines(non_contact_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+
+            
             
     def _draw_coord(self):
         vec_x = np.array([1,0,0])
@@ -1540,7 +1582,7 @@ class LeggedV2(BaseTask):
         vec_y_world_geom = gymutil.WireframeSphereGeometry(0.04, 16, 16, None, color=(0, 1, 0))
         vec_z_world_geom = gymutil.WireframeSphereGeometry(0.04, 16, 16, None, color=(0, 0, 1))
         
-        # 绘制世界坐标系的 xyz 轴
+        #! 绘制世界坐标系的 xyz 轴
         for i in range(5):
             pose_arrow = 0.1 * (i+1) * vec_x + self.env_origins[self.lookat_id].cpu().numpy()
             pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
@@ -1554,7 +1596,7 @@ class LeggedV2(BaseTask):
             pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
             gymutil.draw_lines(vec_z_world_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
     
-        # 绘制机器人坐标系的 xyz 轴
+        #! 绘制机器人坐标系的 xyz 轴
         base_quat = self.base_quat[self.lookat_id].cpu().numpy()
         projected_vecx = quat_apply_np(base_quat, vec_x)
         projected_vecy = quat_apply_np(base_quat, vec_y)

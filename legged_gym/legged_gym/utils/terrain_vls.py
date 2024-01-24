@@ -179,9 +179,13 @@ class Terrainvls:
             self.add_terrain_to_map(terrain, i, j)
         
     def curiculum(self):
+        # dif_set = [0.1, 0.5, 1.0]
+        
         for j in range(self.cfg.num_cols):
             for i in range(self.cfg.num_rows):
                 difficulty = i / self.cfg.num_rows
+                # difficulty = dif_set[i]
+                
                 choice = j / self.cfg.num_cols + 0.001
 
                 terrain = self.make_terrain(choice, difficulty, i, j)   # num_row num_col
@@ -249,7 +253,7 @@ class Terrainvls:
             self.step_terrain_goal(terrain,
                         num_stones=1,
                         # step_height= 0.5*difficulty,    # 之前是0.5再加一个难度
-                        step_height= 0.55*difficulty,  
+                        step_height= 0.7*difficulty,  
                         x_range=[1.0,2.0],
                         )
             # terrain_utils.random_uniform_terrain(terrain, min_height=-height, max_height=height, step=0.005, downsampled_scale=self.cfg.downsampled_scale)
@@ -268,8 +272,8 @@ class Terrainvls:
             #! 训完这个的depth policy感觉platform_length应该大一点，不然第一个gap来的太快，根本看不见
             self.gap_terrain_goal(terrain,
                             num_gaps=num_gaP,
-                            gap_size=0.1 + 0.9 * difficulty,    # 降低初始的gap_size
-                            # gap_size=0.8,   # ptp 011-26
+                            # gap_size=0.1 + 0.9 * difficulty,    # 降低初始的gap_size
+                            gap_size=0.1 + 1.0 * difficulty,
                             gap_depth=[0.5, 1],
                             pad_height=0,
                             x_range=[0.8, 1.5],
@@ -319,7 +323,7 @@ class Terrainvls:
             
             self.stepping_stones_terrain_goal(terrain, 
                                               stone_size=0.8-0.6*difficulty, 
-                                              stone_distance=0.05+0.05*difficulty,
+                                              stone_distance=0.05+0.15*difficulty,
                                             #   stone_size=1.0-0.6*difficulty, 
                                             #   stone_distance=0.0+0.2*difficulty, 
                                               max_height=0.02*difficulty,
@@ -631,6 +635,8 @@ class Terrainvls:
             
             self.ceiling_height_raw[ obstacle_start_x: obstacle_end_x, 
                                 obstacle_start_y:obstacle_end_y] = crawl_height / terrain.vertical_scale
+            # self.ceiling_height_raw[ obstacle_start_x: obstacle_end_x+3, 
+            #                     obstacle_start_y:obstacle_end_y] = crawl_height / terrain.vertical_scale            
             
             # upper_trimesh = box_trimesh(
             #     np.array([crawl_length, crawl_width, crawl_wall_height_], dtype=np.float32),    # size

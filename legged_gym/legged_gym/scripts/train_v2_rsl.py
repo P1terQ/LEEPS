@@ -16,7 +16,7 @@ def train(args):
     # env_cfg.env.num_envs = 1
     # env_cfg.terrain.num_rows = max(2, env_cfg.terrain.max_init_terrain_level+1)    
     # env_cfg.terrain.num_cols = 2
-    env_cfg.terrain.max_init_terrain_level = 9
+    # env_cfg.terrain.max_init_terrain_level = 9
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
