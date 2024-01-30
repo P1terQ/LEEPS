@@ -103,6 +103,25 @@ class Actor_RMA(nn.Module):
             
         # 从历史的prop中还原出priv_info_latent
         self.history_encoder = StateHistoryEncoder(activation_fn, num_prop, num_history, priv_envinfo_encoder_output_dim)
+        print(self.history_encoder)
+        # StateHistoryEncoder(
+        #   (activation_fn): ELU(alpha=1.0)
+        #   (encoder): Sequential(
+        #     (0): Linear(in_features=49, out_features=30, bias=True)
+        #     (1): ELU(alpha=1.0)
+        #   )
+        #   (conv_layers): Sequential(
+        #     (0): Conv1d(30, 20, kernel_size=(4,), stride=(2,))
+        #     (1): ELU(alpha=1.0)
+        #     (2): Conv1d(20, 10, kernel_size=(2,), stride=(1,))
+        #     (3): ELU(alpha=1.0)
+        #     (4): Flatten(start_dim=1, end_dim=-1)
+        #   )
+        #   (linear_output): Sequential(
+        #     (0): Linear(in_features=30, out_features=20, bias=True)
+        #     (1): ELU(alpha=1.0)
+        #   )
+        # )
             
         # terrain scandots
         if len(priv_terrainscan_encoder_dims) > 0:  # [128, 64, 32]

@@ -179,7 +179,8 @@ class LeggedV2Cfg(BaseConfig):
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "dual": 0.0
+                        "dual": 0.0,
+                        "parkour": 0.0
                         }
         terrain_proportions = list(terrain_dict.values())
         
@@ -269,8 +270,10 @@ class LeggedV2Cfg(BaseConfig):
         
         randomize_friction = True
         friction_range = [0.6, 2.]
+        
         randomize_base_mass = True
         added_mass_range = [-1.0, 3.]
+        
         randomize_base_com = True
         added_com_range = [-0.2, 0.2]
         
@@ -305,22 +308,20 @@ class LeggedV2Cfg(BaseConfig):
         action_delay_view = 1
         action_buf_len = 8  # action_history_buf 长度
         
-        
-        
-        
-        
-        
 
         
     class rewards:
         class scales:                       
             # main task term
-            task_distance = 10.0    # 5.0
+            # task_distance = 10.0    # 5.0
             
+            #! 新加的task term，用来做消融实验，这个起作用的时候task_distance和exploration_terms应注释
+            vel_tracking = 1.0
             
             # exploration terms
-            exploration_vel = 1.5 #2.0 #1.2
-            stalling = 1
+            # exploration_vel = 1.5 #2.0 #1.2
+            # stalling = 1
+            
             facing_target = 0.3
             early_termination = -200 
             staystill_atgoal = 1000 #250 # 200 #8 #2
@@ -390,7 +391,7 @@ class LeggedV2Cfg(BaseConfig):
             contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 class LeggedV2CfgPPO(BaseConfig):
-    seed = 3
+    seed = 8
     runner_class_name = 'OnPolicyRunner'
  
     class policy:
@@ -419,8 +420,8 @@ class LeggedV2CfgPPO(BaseConfig):
         num_mini_batches = 4 # mini batch size = num_envs*nsteps / nminibatches
         learning_rate = 2.e-4 #5.e-4
         schedule = 'adaptive' # could be adaptive, fixed
-        gamma = 0.99
-        lam = 0.95
+        gamma = 0.99    # Discount factor
+        lam = 0.95  # GAE discount factor
         desired_kl = 0.01
         max_grad_norm = 1.
         

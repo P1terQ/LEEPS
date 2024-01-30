@@ -44,7 +44,8 @@ def play(args):
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
-                        "dual": 0.0
+                        "dual": 0.0,
+                        "parkour": 0.0
                         }   
     env_cfg.terrain.curriculum = True
     

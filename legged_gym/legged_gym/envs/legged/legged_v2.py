@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 import sys
 from legged_gym.utils.gamepad_reader import Gamepad
 
+import csv
 
 class LeggedV2(BaseTask):
     def __init__(self, cfg: LeggedV2Cfg, sim_params, physics_engine, sim_device, headless):
@@ -231,6 +232,20 @@ class LeggedV2(BaseTask):
         contact = torch.norm(self.robot_contact_forces[:, self.feet_indices], dim=-1) > 2.
         self.contact_filt = torch.logical_or(contact, self.last_contacts) # [num_env, 4]
         self.last_contacts = contact
+        
+        # 记录contact
+        self.episode_length_buf_s = self.episode_length_buf*self.dt
+        # print("episode_length_buf_s: ", self.episode_length_buf_s)
+        combined_tensor = torch.cat((self.episode_length_buf_s.unsqueeze(-1), contact.float()), dim=-1)
+        # print("combined_tensor: ", combined_tensor)
+        
+        combined_list = combined_tensor.tolist()
+        csv_file_path = os.path.join(LEGGED_GYM_ROOT_DIR, "legged_gym", "tests", "data", "contact_129.csv")
+        with open(csv_file_path, 'a+', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(combined_list)
+        
+        
 
         # 遥控控制,override env_goal
         if self.cfg.env.remote:
@@ -287,10 +302,10 @@ class LeggedV2(BaseTask):
             self.gym.clear_lines(self.viewer)
             
             if not self.cfg.depth.use_camera:
-            #     self._draw_height_samples()
-                self._draw_feet()
-            #     # self._draw_coord()
-            #     self._draw_goals()
+                # self._draw_height_samples()
+                # self._draw_feet()
+                # self._draw_coord()
+                self._draw_goals()
 
             
             if self.cfg.depth.use_camera:
@@ -1516,7 +1531,7 @@ class LeggedV2(BaseTask):
         #! robotvel_world
         # sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0, 1, 1))
         
-        # robotvel_vec = self.base_lin_vel_world[self.lookat_id, :3]
+        # robotvel_vec = self.base_lin_vel_world[self.lookat_id, :3]  # torch.Size([3])
         # norm = torch.norm(robotvel_vec, dim=-1, keepdim=True)
         # target_vec_norm = robotvel_vec / (norm + 1e-5)
         # for i in range(10):
@@ -1527,6 +1542,20 @@ class LeggedV2(BaseTask):
         #     pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
         #     gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
         
+        #! targetvel
+        # target_velocity = self.robot2target_world[:,:2] / (torch.norm(self.robot2target_world[:,:2], dim=-1, keepdim=True) + 1e-5) * 0.5
+        # sphere_geom_arrow = gymutil.WireframeSphereGeometry(0.02, 16, 16, None, color=(0.3, 0.6, 0.3))
+        
+        # targetvel_vec = torch.cat([target_velocity[self.lookat_id, ], torch.zeros(1).to(self.device)], dim=0)
+        
+        # norm = torch.norm(targetvel_vec, dim=-1, keepdim=True)
+        # target_vec_norm = targetvel_vec / (norm + 1e-5)
+        # for i in range(10):
+
+        #     pose_arrow = self.root_states[self.robot_actor_idxs[self.lookat_id], :3] + norm/20*(i+1) * target_vec_norm[:3]
+        #     pose_arrow=pose_arrow.cpu().numpy()
+        #     pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
+        #     gymutil.draw_lines(sphere_geom_arrow, self.gym, self.viewer, self.envs[self.lookat_id], pose)
         
     def _draw_feet(self):
         #! draw feet at edge
@@ -1538,7 +1567,7 @@ class LeggedV2(BaseTask):
         ff_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(1, 0, 0))
         feet_force = self.robot_contact_forces[:, self.feet_indices, :3] # [num_env, 4, 3]
         
-        for i in range(4):
+        # for i in range(4):
     #         pose = gymapi.Transform(gymapi.Vec3(feet_pos[self.lookat_id, i, 0], feet_pos[self.lookat_id, i, 1], feet_pos[self.lookat_id, i, 2]), r=None)
             
     #         # draw if foot at edge
@@ -1550,18 +1579,19 @@ class LeggedV2(BaseTask):
     #             gymutil.draw_lines(non_edge_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
         
             # draw foot force
-            ff_norm = (torch.norm(feet_force[self.lookat_id, i, :3]) + 1e-5)
-            ff_vec = feet_force[self.lookat_id, i, :3] / ff_norm
-            for j in range(15):
-                pose_arrow = ff_norm/10000 * (j+1) * ff_vec + feet_pos[self.lookat_id, i, :3]
-                pose_arrow = pose_arrow.cpu().numpy()
-                pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
-                gymutil.draw_lines(ff_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
+            # ff_norm = (torch.norm(feet_force[self.lookat_id, i, :3]) + 1e-5)
+            # ff_vec = feet_force[self.lookat_id, i, :3] / ff_norm
+            # for j in range(15):
+            #     pose_arrow = ff_norm/10000 * (j+1) * ff_vec + feet_pos[self.lookat_id, i, :3]
+            #     pose_arrow = pose_arrow.cpu().numpy()
+            #     pose = gymapi.Transform(gymapi.Vec3(pose_arrow[0], pose_arrow[1], pose_arrow[2]), r=None)
+            #     gymutil.draw_lines(ff_geom, self.gym, self.viewer, self.envs[self.lookat_id], pose)
                     
         #! draw feet contact
-        non_contact_geom = gymutil.WireframeSphereGeometry(0.025, 16, 16, None, color=(0, 1, 0))
-        contact_geom = gymutil.WireframeSphereGeometry(0.025, 16, 16, None, color=(1, 0, 0)) 
-        
+        # non_contact_geom = gymutil.WireframeSphereGeometry(0.025, 16, 16, None, color=(0, 1, 0))
+        # contact_geom = gymutil.WireframeSphereGeometry(0.025, 16, 16, None, color=(1, 0, 0)) 
+        non_contact_geom = gymutil.WireframeSphereGeometry(0.01, 16, 16, None, color=(0, 1, 0))
+        contact_geom = gymutil.WireframeSphereGeometry(0.03, 16, 16, None, color=(1, 0, 0))         
         # feet_pos = self.robot_link_states[:, self.feet_indices, :3] # [num_env, 4, 3]
                     
         for i in range(4):
@@ -1714,6 +1744,19 @@ class LeggedV2(BaseTask):
             temp[take_effect_flag] / (self.max_episode_length_s - self.task_episode_length_s)   # 1 / (1 + robot2target_world + [] )
         
         return self.rew_container_task
+    
+    def _reward_vel_tracking(self):
+    
+        # 定义一个目标速度target_velocity，大小是0.5m/s,方向是从机器人到目标点
+        target_velocity = self.robot2target_world[:,:2] / (torch.norm(self.robot2target_world[:,:2], dim=-1, keepdim=True) + 1e-5) * 0.85    #! 0.8m/s
+        lin_vel_error = torch.sum(torch.square(self.base_lin_vel_world[:,:2] - target_velocity), dim=-1)
+        
+        # print("target_velocity: ", target_velocity)
+        # print("current velocity: ", self.base_lin_vel_world[:,:2] )
+        # print("distance: ", torch.norm(self.robot2target_world[:,:2], dim=-1))
+        
+        # 如果机器人和目标点的距离小于0.3，return 0；否则return vel_error
+        return torch.where(torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3, torch.zeros_like(lin_vel_error), torch.exp(-lin_vel_error/0.25))
 
 
     #! auxiliary terms

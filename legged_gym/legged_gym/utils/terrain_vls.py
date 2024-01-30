@@ -240,7 +240,7 @@ class Terrainvls:
                             horizontal_scale=self.cfg.horizontal_scale)
         
         #! test mode: set all subterrain difficulty to 1
-        # difficulty = 0.1
+        # difficulty = 1.0
         
         if choice < self.proportions[0]:
             idx = 1
@@ -305,7 +305,7 @@ class Terrainvls:
                                     max_size=3.,
                                     num_rects=20*difficulty
                                 )
-            self.add_roughness(terrain, difficulty=difficulty)
+            # self.add_roughness(terrain, difficulty=difficulty)
 
         elif choice < self.proportions[5]:
             idx = 6
@@ -324,8 +324,6 @@ class Terrainvls:
             self.stepping_stones_terrain_goal(terrain, 
                                               stone_size=0.8-0.6*difficulty, 
                                               stone_distance=0.05+0.15*difficulty,
-                                            #   stone_size=1.0-0.6*difficulty, 
-                                            #   stone_distance=0.0+0.2*difficulty, 
                                               max_height=0.02*difficulty,
                                               if_flat=flat_)
             
@@ -390,6 +388,31 @@ class Terrainvls:
                                     if_flat_=if_flat
                                        )
             # self.add_roughness(terrain, difficulty=0.1)
+            
+        elif choice < self.proportions[11]:
+            idx = 12
+            if_flat = False
+            if difficulty == 0:
+                if_flat = True
+                
+            # self.parkour_terrain_goal(terrain,
+            #                           step_height=0.5*difficulty,
+            #                           log_width=0.6 - 0.35 * difficulty,
+            #                           steppingstone_width=0.8-0.6*difficulty,
+            #                           steppingstone_apart=0.15*difficulty,
+            #                           steppingstone_height=0.02*difficulty,
+            #                           slope_incliniation = -0.4*difficulty,
+            #                           gap_width=0.8*difficulty,
+            #                           if_flat_=if_flat)
+            self.parkour_terrain_goal(terrain,
+                                      step_height=0.7*difficulty,
+                                      log_width=0.6 - 0.4 * difficulty,
+                                      steppingstone_width=0.8-0.6*difficulty,
+                                      steppingstone_apart=0.2*difficulty,
+                                      steppingstone_height=0.02*difficulty,
+                                      slope_incliniation = -0.4*difficulty,
+                                      gap_width=1.0*difficulty,
+                                      if_flat_=if_flat)
             
             
         terrain.idx = idx
@@ -684,6 +707,101 @@ class Terrainvls:
         # terrain.height_field_raw[-pad_width:, :] = 1000
         
         return terrain
+    
+    
+    def parkour_terrain_goal(self,
+                            terrain,
+                            step_height,
+                            log_width,
+                            steppingstone_width,
+                            steppingstone_apart,
+                            steppingstone_height,
+                            gap_width,
+                            slope_incliniation,
+                            if_flat_=False,
+                            platform_len = 1.5
+                            
+                            
+                            ):
+        
+        step_height_ = int(step_height / terrain.vertical_scale)
+        half_log_width_ = round(log_width / 2 / terrain.horizontal_scale)
+        stone_size = int(steppingstone_width / terrain.horizontal_scale)
+        stone_distance = int(steppingstone_apart / terrain.horizontal_scale)
+        stone_height = int(steppingstone_height / terrain.vertical_scale)
+        gap_width_ = int(gap_width / terrain.horizontal_scale)
+        
+        platform_len_ = int(platform_len / terrain.horizontal_scale)
+        
+        #! 生成step 
+        step_width_ = int(0.7 / terrain.horizontal_scale)
+        terrain.height_field_raw[platform_len_:platform_len_+step_width_,] = step_height_
+        x_ = platform_len_+step_width_
+        
+        #! 生成独木桥
+        mid_y = terrain.length // 2 
+        log_length_ = int(1.0/ terrain.horizontal_scale)
+        
+        terrain.height_field_raw[x_:x_+log_length_,:mid_y-half_log_width_] = -200
+        terrain.height_field_raw[x_:x_+log_length_,mid_y+half_log_width_:] = -200
+        terrain.height_field_raw[x_:x_+log_length_, mid_y-half_log_width_:mid_y+half_log_width_] = step_height_
+        x_ = x_+log_length_
+        
+        #! 生成平台
+        # table_length_ = int(0.1 / terrain.horizontal_scale)
+        # terrain.height_field_raw[x_:x_+table_length_,] = step_height_
+        # x_ = x_+table_length_
+        
+        #! 梅花桩
+        height_range = np.arange(-stone_height-1, stone_height, step=1) + step_height_
+        start_x = x_
+        end_x = start_x + int(0.9 / terrain.horizontal_scale)
+        start_y = 0
+        terrain.height_field_raw[start_x:end_x, :] = int(-10 / terrain.vertical_scale)
+        while start_x < end_x:
+            stop_x = min(terrain.width, start_x + stone_size)
+            start_y = np.random.randint(0, stone_size)
+            stop_y = max(0, start_y - stone_distance)
+            terrain.height_field_raw[start_x: stop_x, 0: stop_y] = np.random.choice(height_range)
+        
+            while start_y < terrain.length: # 先填一行
+                stop_y = min(terrain.length, start_y + stone_size)
+                terrain.height_field_raw[start_x: stop_x, start_y: stop_y] = np.random.choice(height_range)
+                start_y += stone_size + stone_distance  # next stepping stone
+            start_x += stone_size + stone_distance  # 再加到下一行
+            
+        x_ = end_x
+        
+        #! 下坡
+        start_x = x_
+        end_x = start_x + int(0.6 / terrain.horizontal_scale)
+        length = end_x - start_x
+        
+        x = np.arange(0, length)
+        y = np.arange(0, terrain.length)
+        xx, yy = np.meshgrid(x, y, sparse=True)
+        xx = xx.reshape(length, 1)
+        
+        max_height = int(slope_incliniation * (terrain.horizontal_scale / terrain.vertical_scale) * length) 
+        # terrain.height_field_raw[start_x:end_x,:] =step_height_ + (max_height * xx).astype(terrain.height_field_raw.dtype)
+        terrain.height_field_raw[start_x:end_x,:] = (max_height * xx / length).astype(terrain.height_field_raw.dtype) + step_height_
+        x_ = end_x
+        
+        #! 把两边的高度都消掉
+        half_width_ = int(0.7 / terrain.horizontal_scale)
+        terrain.height_field_raw[platform_len_:x_,:mid_y-half_width_] = -200
+        terrain.height_field_raw[platform_len_:x_,mid_y+half_width_:] = -200
+        
+        #! gap
+        # gap_width_
+        terrain.height_field_raw[x_:x_+gap_width_,] = -200
+        
+        
+        
+        
+        goal = [terrain.width * terrain.horizontal_scale - 1.0 , terrain.length * 1/2 * terrain.horizontal_scale]
+        terrain.goal = goal
+        
 
 
     def stepping_stones_terrain_goal(self, 
