@@ -204,6 +204,7 @@ def get_args():
         {"name": "--remote", "action": "store_true", "default": False, "help": "use remote"},
 
         {"name": "--artifact", "type": str, "default": None, "help": "artifact"},  
+        {"name": "--web", "action": "store_true", "default": False, "help": "if use web viewer"},
 
     ]
     # parse arguments
