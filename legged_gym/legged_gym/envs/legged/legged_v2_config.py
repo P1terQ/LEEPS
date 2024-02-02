@@ -170,10 +170,10 @@ class LeggedV2Cfg(BaseConfig):
         
         terrain_dict = {
                         "step": 0.0, # proportions[0]
-                        "gap": 0.0,  # proportions[1]
+                        "gap": 1.0,  # proportions[1]
                         "slope": 0.0,
                         "stair": 0.0, 
-                        "discrete": 1.0, 
+                        "discrete": 0.0, 
                         "flat": 0.0,       # proportions[5]
                         "steppingstones": 0.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
@@ -316,7 +316,7 @@ class LeggedV2Cfg(BaseConfig):
             # task_distance = 10.0    # 5.0
             
             #! 新加的task term，用来做消融实验，这个起作用的时候task_distance和exploration_terms应注释
-            vel_tracking = 1.0
+            vel_tracking = 2.0
             
             # exploration terms
             # exploration_vel = 1.5 #2.0 #1.2
@@ -391,7 +391,7 @@ class LeggedV2Cfg(BaseConfig):
             contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 class LeggedV2CfgPPO(BaseConfig):
-    seed = 8
+    seed = 3
     runner_class_name = 'OnPolicyRunner'
  
     class policy:

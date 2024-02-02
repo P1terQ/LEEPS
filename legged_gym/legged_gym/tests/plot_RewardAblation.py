@@ -14,43 +14,107 @@ matplotlib.rcParams['ps.fonttype'] = 42
 #! 之后改到3000、4000个iteration会好看一点，现在这个曲线不好看
 
 # read the data
-stack_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plot/data/TaskRewardAblation_steppingstone.csv")
+discrete_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plot/data/TaskRewardAblation_discrete.csv")
+step_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plot/data/TaskRewardAblation_step.csv")
+steppingstone_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plot/data/TaskRewardAblation_steppingstone1.csv")
+gap_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plot/data/TaskRewardAblation_gap.csv")
 
 # smoothing factor  #! smoothing factor也要改小一点，现在曲线看上去太光滑了
-TSBOARD_SMOOTHING = 0.85
+TSBOARD_SMOOTHING = 0.88
 # TSBOARD_SMOOTHING = 0.7
 
 # apply exponential moving average smoothingto the data
-stack_data   = stack_data.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()
+discrete_data = discrete_data.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()
+step_data = step_data.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()
+steppingstone_data = steppingstone_data.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()
+gap_data = gap_data.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()
 
 # convert to numpy array. shape: (3000epoch, 10)
-stack_data   = np.array(stack_data)
+discrete_data = np.array(discrete_data)
+step_data = np.array(step_data)
+steppingstone_data = np.array(steppingstone_data)
+gap_data = np.array(gap_data)
+
+NUM_EPOCHS = 4000
 
 #  Reward Mean - Reward Std, Rewad Mean, Reward Mean + Reward Std
 #! Normal
-stack_data0 = np.concatenate((stack_data[:,0]-stack_data[:,1],stack_data[:,0],stack_data[:,0] + stack_data[:,1]))   # shape: (9000,)
+discrete_data0 = np.concatenate((discrete_data[:NUM_EPOCHS,0]-discrete_data[:NUM_EPOCHS,1],discrete_data[:NUM_EPOCHS,0],discrete_data[:NUM_EPOCHS,0] + discrete_data[:NUM_EPOCHS,1]))   # shape: (9000,)
 #! NoExploration
-stack_data1 = np.concatenate((stack_data[:,2]-stack_data[:,3],stack_data[:,2],stack_data[:,2] + stack_data[:,3]))
+discrete_data1 = np.concatenate((discrete_data[:NUM_EPOCHS,2]-discrete_data[:NUM_EPOCHS,3],discrete_data[:NUM_EPOCHS,2],discrete_data[:NUM_EPOCHS,2] + discrete_data[:NUM_EPOCHS,3]))
 #! NoParkour
-stack_data2 = np.concatenate((stack_data[:,4]-stack_data[:,5],stack_data[:,4],stack_data[:,4] + stack_data[:,5]))
+discrete_data2 = np.concatenate((discrete_data[:NUM_EPOCHS,4]-discrete_data[:NUM_EPOCHS,5],discrete_data[:NUM_EPOCHS,4],discrete_data[:NUM_EPOCHS,4] + discrete_data[:NUM_EPOCHS,5]))
 #! NoNormalization
-stack_data3 = np.concatenate((stack_data[:,6]-stack_data[:,7],stack_data[:,6],stack_data[:,6] + stack_data[:,7]))
+discrete_data3 = np.concatenate((discrete_data[:NUM_EPOCHS,6]-discrete_data[:NUM_EPOCHS,7],discrete_data[:NUM_EPOCHS,6],discrete_data[:NUM_EPOCHS,6] + discrete_data[:NUM_EPOCHS,7]))
+
+#! Normal
+step_data0 = np.concatenate((step_data[:NUM_EPOCHS,0]-step_data[:NUM_EPOCHS,1],step_data[:NUM_EPOCHS,0],step_data[:NUM_EPOCHS,0] + step_data[:NUM_EPOCHS,1]))   # shape: (9000,)
+#! NoExploration
+step_data1 = np.concatenate((step_data[:NUM_EPOCHS,2]-step_data[:NUM_EPOCHS,3],step_data[:NUM_EPOCHS,2],step_data[:NUM_EPOCHS,2] + step_data[:NUM_EPOCHS,3]))
+#! NoParkour
+step_data2 = np.concatenate((step_data[:NUM_EPOCHS,4]-step_data[:NUM_EPOCHS,5],step_data[:NUM_EPOCHS,4],step_data[:NUM_EPOCHS,4] + step_data[:NUM_EPOCHS,5]))
+#! NoNormalization
+step_data3 = np.concatenate((step_data[:NUM_EPOCHS,6]-step_data[:NUM_EPOCHS,7],step_data[:NUM_EPOCHS,6],step_data[:NUM_EPOCHS,6] + step_data[:NUM_EPOCHS,7]))
+
+NUM_EPOCHS_steppingstone = 5000
+#! Normal
+steppingstone_data0 = np.concatenate((steppingstone_data[:NUM_EPOCHS_steppingstone,0]-steppingstone_data[:NUM_EPOCHS_steppingstone,1],steppingstone_data[:NUM_EPOCHS_steppingstone,0],steppingstone_data[:NUM_EPOCHS_steppingstone,0] + steppingstone_data[:NUM_EPOCHS_steppingstone,1]))   # shape: (9000,)
+#! NoExploration
+steppingstone_data1 = np.concatenate((steppingstone_data[:NUM_EPOCHS_steppingstone,2]-steppingstone_data[:NUM_EPOCHS_steppingstone,3],steppingstone_data[:NUM_EPOCHS_steppingstone,2],steppingstone_data[:NUM_EPOCHS_steppingstone,2] + steppingstone_data[:NUM_EPOCHS_steppingstone,3]))
+#! NoParkour
+steppingstone_data2 = np.concatenate((steppingstone_data[:NUM_EPOCHS_steppingstone,4]-steppingstone_data[:NUM_EPOCHS_steppingstone,5],steppingstone_data[:NUM_EPOCHS_steppingstone,4],steppingstone_data[:NUM_EPOCHS_steppingstone,4] + steppingstone_data[:NUM_EPOCHS_steppingstone,5]))
+#! NoNormalization
+steppingstone_data3 = np.concatenate((steppingstone_data[:NUM_EPOCHS_steppingstone,6]-steppingstone_data[:NUM_EPOCHS_steppingstone,7],steppingstone_data[:NUM_EPOCHS_steppingstone,6],steppingstone_data[:NUM_EPOCHS_steppingstone,6] + steppingstone_data[:NUM_EPOCHS_steppingstone,7]))
+
+#! Normal
+gap_data0 = np.concatenate((gap_data[:NUM_EPOCHS,0]-gap_data[:NUM_EPOCHS,1],gap_data[:NUM_EPOCHS,0],gap_data[:NUM_EPOCHS,0] + gap_data[:NUM_EPOCHS,1]))   # shape: (9000,)
+#! NoExploration
+gap_data1 = np.concatenate((gap_data[:NUM_EPOCHS,2]-gap_data[:NUM_EPOCHS,3],gap_data[:NUM_EPOCHS,2],gap_data[:NUM_EPOCHS,2] + gap_data[:NUM_EPOCHS,3]))
+#! NoParkour
+gap_data2 = np.concatenate((gap_data[:NUM_EPOCHS,4]-gap_data[:NUM_EPOCHS,5],gap_data[:NUM_EPOCHS,4],gap_data[:NUM_EPOCHS,4] + gap_data[:NUM_EPOCHS,5]))
+#! NoNormalization
+gap_data3 = np.concatenate((gap_data[:NUM_EPOCHS,6]-gap_data[:NUM_EPOCHS,7],gap_data[:NUM_EPOCHS,6],gap_data[:NUM_EPOCHS,6] + gap_data[:NUM_EPOCHS,7]))
 
 # aggregate the calculated data into a list
-stack_data_total = []
-stack_data_total.append(stack_data0)
-stack_data_total.append(stack_data1)
-stack_data_total.append(stack_data2)
-stack_data_total.append(stack_data3)
-print("stack_data_total: ",stack_data_total)
+discrete_data_total = []
+discrete_data_total.append(discrete_data0)
+discrete_data_total.append(discrete_data1)
+discrete_data_total.append(discrete_data2)
+discrete_data_total.append(discrete_data3)
+
+
+step_data_total = []
+step_data_total.append(step_data0)
+step_data_total.append(step_data1)
+step_data_total.append(step_data2)
+step_data_total.append(step_data3)
+print("step_data_total: ",step_data_total)
+
+steppingstone_data_total = []
+steppingstone_data_total.append(steppingstone_data0)
+steppingstone_data_total.append(steppingstone_data1)
+steppingstone_data_total.append(steppingstone_data2)
+steppingstone_data_total.append(steppingstone_data3)
+print("steppingstone_data_total: ",steppingstone_data_total)
+
+gap_data_total = []
+gap_data_total.append(gap_data0)
+gap_data_total.append(gap_data1)
+gap_data_total.append(gap_data2)
+gap_data_total.append(gap_data3)
+print("gap_data_total: ",gap_data_total)
 
 # prepare x-axis data representing ecoch
-stack_epoch1 = range(len(stack_data[:,0]))  # range(0, 5999)
-stack_epoch2 = range(len(stack_data[:,0]))
-stack_epoch3 = range(len(stack_data[:,0]))
-stack_epoch = np.concatenate((stack_epoch1,stack_epoch2,stack_epoch3))
-# nut_epoch = stack_epoch # array([   0,    1,    2, ..., 2997, 2998, 2999])
+epoch1 = range(NUM_EPOCHS)  # range(0, 5999)
+epoch2 = range(NUM_EPOCHS)
+epoch3 = range(NUM_EPOCHS)
+epoch = np.concatenate((epoch1,epoch2,epoch3))
+print("epoch shape: ",epoch.shape)
 
+epoch1_steppingstone = range(NUM_EPOCHS_steppingstone)  # range(0, 5999)
+epoch2_steppingstone = range(NUM_EPOCHS_steppingstone)
+epoch3_steppingstone = range(NUM_EPOCHS_steppingstone)
+epoch_steppingstone = np.concatenate((epoch1_steppingstone,epoch2_steppingstone,epoch3_steppingstone))
 
 labels = [
     'LEEPS',
@@ -69,22 +133,18 @@ color3=[
        ]
 
 # Initialize the figure
-# lgd = plt.figure(figsize=(16/4*3, 9/4*3))
-lgd = plt.figure(figsize=(4/4*3, 3/4*3))    #! 太空了，调整比例
+lgd = plt.figure(figsize=(16/4*3, 9/4*3))
+# lgd = plt.figure(figsize=(4/4*3, 3/4*3))    #! 太空了，调整比例
 
 # create a subplot
 stack = plt.subplot(221)    # subplot的格式是（行，列，第几个图）
-for i in range(len(stack_data_total)):  # 5条线
+for i in range(len(discrete_data_total)):  # 5条线
     print(i)
-    stack = sns.lineplot(x=stack_epoch, y=stack_data_total[i],label=labels[i], color=color3[i]) #! plot the data
+    stack = sns.lineplot(x=epoch, y=discrete_data_total[i],label=labels[i], color=color3[i]) #! plot the data
 
 # customize the x-axis ticks
-# plt.xticks([0, 500, 1000, 1500, 2000, 2500, 3000], [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0])
-plt.xticks([0, 1000, 2000, 3000, 4000, 5000, 6000], [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-
-
+plt.xticks([0, 1000, 2000, 3000, 4000], [0, 1.0, 2.0, 3.0, 4.0])
 # set axis limit
-# stack.set_xlim(0,)
 stack.set_ylim(-0.1, )  # 调整y轴的范围
 
 # set labels and title for the subplot
@@ -92,6 +152,59 @@ plt.ylabel("Task Reward", fontsize=14)
 plt.title("Discrete Rough", fontsize=16)    #! label的字需要变大
 print('finsh Discrete Rough')
 stack.legend_.remove()  # 把subplot里的legend(label)去掉
+
+
+# create a subplot
+stack = plt.subplot(222)    # subplot的格式是（行，列，第几个图）
+for i in range(len(step_data_total)):  # 5条线
+    print(i)
+    stack = sns.lineplot(x=epoch, y=step_data_total[i],label=labels[i], color=color3[i]) #! plot the data
+
+# customize the x-axis ticks
+plt.xticks([0, 1000, 2000, 3000, 4000], [0, 1.0, 2.0, 3.0, 4.0])
+# set axis limit
+stack.set_ylim(-0.1, )  # 调整y轴的范围
+
+# set labels and title for the subplot
+plt.ylabel("Task Reward", fontsize=14)
+plt.title("Step", fontsize=16)    #! label的字需要变大
+print('finsh Step')
+stack.legend_.remove()
+
+# create a subplot
+stack = plt.subplot(223)    # subplot的格式是（行，列，第几个图）
+for i in range(len(steppingstone_data_total)):  # 5条线
+    print(i)
+    stack = sns.lineplot(x=epoch_steppingstone, y=steppingstone_data_total[i],label=labels[i], color=color3[i]) #! plot the data
+
+# customize the x-axis ticks
+plt.xticks([0, 1000, 2000, 3000, 4000, 5000], [0, 1.0, 2.0, 3.0, 4.0, 5.0])
+# set axis limit
+stack.set_ylim(-0.1, )  # 调整y轴的范围
+
+# set labels and title for the subplot
+plt.ylabel("Task Reward", fontsize=14)
+plt.title("Stepping stones", fontsize=16)    #! label的字需要变大
+print('finsh Stepping stones')
+stack.legend_.remove()
+
+# create a subplot
+stack = plt.subplot(224)    # subplot的格式是（行，列，第几个图）
+for i in range(len(gap_data_total)):  # 5条线
+    print(i)
+    stack = sns.lineplot(x=epoch, y=gap_data_total[i],label=labels[i], color=color3[i]) #! plot the data
+
+# customize the x-axis ticks
+plt.xticks([0, 1000, 2000, 3000, 4000], [0, 1.0, 2.0, 3.0, 4.0])
+# set axis limit
+stack.set_ylim(-0.1, )  # 调整y轴的范围
+
+# set labels and title for the subplot
+plt.ylabel("Task Reward", fontsize=14)
+plt.title("Gap", fontsize=16)    #! label的字需要变大
+print('finsh Gap')
+stack.legend_.remove()
+
 
 labels = [
     'LEEPS',
@@ -120,16 +233,16 @@ for line in leg.get_lines():
 # Adjust the layout of the plot to fit everything neatly
 plt.tight_layout()
 
-# plt.savefig('plot_HyTL.pdf',
-#             format='pdf',
-#             bbox_extra_artists=(lgd,),
-#             bbox_inches='tight',
-#             )
-# plt.savefig('plot_HyTL.png',
-#             dpi=500,
-#             format='png',
-#             bbox_extra_artists=(lgd,),
-#             bbox_inches='tight')
+plt.savefig('plot_RewardAblation.pdf',
+            format='pdf',
+            bbox_extra_artists=(lgd,),
+            bbox_inches='tight',
+            )
+plt.savefig('plot_RewardAblation.png',
+            dpi=500,
+            format='png',
+            bbox_extra_artists=(lgd,),
+            bbox_inches='tight')
 
 print('save done')
 

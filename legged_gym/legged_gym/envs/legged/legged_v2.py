@@ -1748,15 +1748,29 @@ class LeggedV2(BaseTask):
     def _reward_vel_tracking(self):
     
         # 定义一个目标速度target_velocity，大小是0.5m/s,方向是从机器人到目标点
-        target_velocity = self.robot2target_world[:,:2] / (torch.norm(self.robot2target_world[:,:2], dim=-1, keepdim=True) + 1e-5) * 0.85    #! 0.8m/s
+        # 离目标点远的时候，target_velocity大小是0.85，方向是从机器人到目标点；离目标点近的时候，target_velocity大小是0
+        a = torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3
+        # print("a.shape: ", a.shape)
+        b = torch.zeros_like(self.base_lin_vel_world[:,:2])
+        # print("b.shape: ", b.shape)
+        c = self.robot2target_world[:,:2] / (torch.norm(self.robot2target_world[:,:2], dim=-1, keepdim=True) + 1e-5) * 0.85
+        # print("c.shape: ", c.shape)
+        # 定义一个target_velocity，使用条件判断a，如果a为true,那么target_velocity=b,否则target_velocity=c
+        target_velocity = torch.where(a.unsqueeze(1), b, c)
+        
+        
+        # target_velocity = torch.where(torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3, torch.zeros_like(self.base_lin_vel_world[:,:2]), self.robot2target_world[:,:2] / (torch.norm(self.robot2target_world[:,:2], dim=-1, keepdim=True) + 1e-5) * 0.85)
+        
         lin_vel_error = torch.sum(torch.square(self.base_lin_vel_world[:,:2] - target_velocity), dim=-1)
         
         # print("target_velocity: ", target_velocity)
         # print("current velocity: ", self.base_lin_vel_world[:,:2] )
         # print("distance: ", torch.norm(self.robot2target_world[:,:2], dim=-1))
+        # print("vel_tracking_reward: ", torch.where(torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3, torch.zeros_like(lin_vel_error), torch.exp(-lin_vel_error/0.25)))
         
         # 如果机器人和目标点的距离小于0.3，return 0；否则return vel_error
-        return torch.where(torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3, torch.zeros_like(lin_vel_error), torch.exp(-lin_vel_error/0.25))
+        # return torch.where(torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3, torch.ones_like(lin_vel_error)*1.5, torch.exp(-lin_vel_error/0.25))
+        return torch.where(torch.norm(self.robot2target_world[:,:2], dim=-1) < 0.3, torch.exp(-lin_vel_error/0.25)*2.0, torch.exp(-lin_vel_error/0.25))
 
 
     #! auxiliary terms
