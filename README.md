@@ -36,7 +36,7 @@ Paper: Coming Soon <br>
   ```python legged_gym/scripts/play_v2_student.py --task=a1_v2 --load_run [weight_path] ```
   
 ## Arguments
- -  To run on CPU add following arguments: `--sim_device=cpu`, `--rl_device=cpu` (sim on CPU and rl on GPU is possible). Default on GPU.
+ -  To run on CPU add the following arguments: `--sim_device=cpu`, `--rl_device=cpu` (sim on CPU and rl on GPU is possible). Default on GPU.
  -  To run headless (no rendering) add `--headless`.
  -  To improve performance, once the training starts press `v` to stop the rendering. You can then enable it later to check the progress.
  -  The trained policy is saved in `LEEPS/weights/<experiment_name>/<date_time>_<run_name>/model_<iteration>.pt`. Where `<experiment_name>` and `<run_name>` are defined in the train config.
@@ -49,3 +49,12 @@ Paper: Coming Soon <br>
   - --num_envs NUM_ENVS:  Number of environments to create.
   - --seed SEED:  Random seed.
   - --max_iterations MAX_ITERATIONS:  Maximum number of training iterations.
+    
+## Robot Parkour 
+https://github.com/P1terQ/LEEPS/assets/90088571/29a084a5-ff1d-4299-b0d9-a243bba4d1ca
+
+
+
+
+
+
