@@ -253,7 +253,8 @@ class Terrainvls:
             self.step_terrain_goal(terrain,
                         num_stones=1,
                         # step_height= 0.5*difficulty,    # 之前是0.5再加一个难度
-                        step_height= 0.7*difficulty,  
+                        step_height= 0.7*difficulty,
+                        # step_height= 0.5,  
                         x_range=[1.0,2.0],
                         )
             # terrain_utils.random_uniform_terrain(terrain, min_height=-height, max_height=height, step=0.005, downsampled_scale=self.cfg.downsampled_scale)
@@ -274,6 +275,7 @@ class Terrainvls:
                             num_gaps=num_gaP,
                             # gap_size=0.1 + 0.9 * difficulty,    # 降低初始的gap_size
                             gap_size=0.1 + 1.0 * difficulty,
+                            # gap_size=0.8,
                             gap_depth=[0.5, 1],
                             pad_height=0,
                             x_range=[0.8, 1.5],
@@ -305,7 +307,7 @@ class Terrainvls:
                                     max_size=3.,
                                     num_rects=20*difficulty
                                 )
-            # self.add_roughness(terrain, difficulty=difficulty)
+            self.add_roughness(terrain, difficulty=difficulty)
 
         elif choice < self.proportions[5]:
             idx = 6
@@ -324,6 +326,7 @@ class Terrainvls:
             self.stepping_stones_terrain_goal(terrain, 
                                               stone_size=0.8-0.6*difficulty, 
                                               stone_distance=0.05+0.15*difficulty,
+                                            #   stone_distance=0.05+0.05*difficulty,
                                               max_height=0.02*difficulty,
                                               if_flat=flat_)
             
@@ -339,6 +342,7 @@ class Terrainvls:
                                     num_col=num_col_,
                                     crawl_length = 0.5 + 2.5*difficulty,
                                     # crawl_height = 0.45 - 0.25*difficulty,
+                                    # crawl_height=0.2,
                                     crawl_height = 0.42 - 0.25*difficulty,  # 0.17
                                     flat=flat_
                                )
@@ -353,7 +357,7 @@ class Terrainvls:
             
             self.log_terrain_goal(terrain,
                             log_length_range = [0.8+1.5*difficulty, 1.3+1.5*difficulty],
-                            # log_width = 0.28,
+                            # log_width = 0.2,
                             log_width = 0.6 - 0.4 * difficulty,
                             flat=if_flat
                              )

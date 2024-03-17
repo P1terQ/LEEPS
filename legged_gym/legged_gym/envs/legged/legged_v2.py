@@ -239,11 +239,11 @@ class LeggedV2(BaseTask):
         combined_tensor = torch.cat((self.episode_length_buf_s.unsqueeze(-1), contact.float()), dim=-1)
         # print("combined_tensor: ", combined_tensor)
         
-        combined_list = combined_tensor.tolist()
-        csv_file_path = os.path.join(LEGGED_GYM_ROOT_DIR, "legged_gym", "tests", "data", "contact_129.csv")
-        with open(csv_file_path, 'a+', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerows(combined_list)
+        # combined_list = combined_tensor.tolist()
+        # csv_file_path = os.path.join(LEGGED_GYM_ROOT_DIR, "legged_gym", "tests", "data", "contact_218.csv")
+        # with open(csv_file_path, 'a+', newline='') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerows(combined_list)
         
         
 
@@ -555,7 +555,6 @@ class LeggedV2(BaseTask):
         """ Creates simulation, terrain and evironments
         """
         self.up_axis_idx = 2 # 2 for z, 1 for y -> adapt gravity accordingly
-        # if self.cfg.depth.use_camera: #! 现在加上record功能了，所以都需要
         self.graphics_device_id = self.sim_device_id  # required in headless mode
             
         self.sim = self.gym.create_sim(self.sim_device_id, self.graphics_device_id, self.physics_engine, self.sim_params)

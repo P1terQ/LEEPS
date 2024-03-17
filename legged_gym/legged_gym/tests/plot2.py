@@ -1,31 +1,48 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
-# Sample data similar to the graph in the image
-hurdle_heights = [0.24, 0.26, 0.30, 0.35, 0.40]
-success_rates_1 = [1.0, 0.9, 0.6, 0.3, 0.1]
-success_rates_2 = [1.0, 0.85, 0.65, 0.5, 0.2]
-success_rates_3 = [1.0, 0.8, 0.5, 0.4, 0.3]
-success_rates_4 = [1.0, 0.9, 0.6, 0.3, 0.1]
-success_rates_5 = [1.0, 0.85, 0.65, 0.5, 0.2]
-success_rates_6 = [1.0, 0.8, 0.5, 0.4, 0.3]
-success_rates_7 = [1.0, 0.9, 0.6, 0.3, 0.1]
-success_rates_8 = [1.0, 0.85, 0.65, 0.5, 0.2]
-success_rates_9 = [1.0, 0.8, 0.5, 0.4, 0.3]
+# Sample data: Replace these with your actual data points
+environments = ['2k steps in Log Bridge', '6k steps in Log Bridge', '2k steps in Tunnel', '6k steps in Tunnel']
+VelocityTracking_scores = [0.8, 0.9, 0.7, 0.6]
+ExtremeParkour_scores = [0.9, 0.8, 0.8, 0.7]
+Oracle_scores = [0.7, 0.8, 0.6, 0.5]
+LEEPS_scores = [0.6, 0.7, 0.5, 0.4]
 
-# Plot each series with a different color and marker
-plt.plot(hurdle_heights, success_rates_1, 'b-s', label='Series 1')  # Blue square markers
-plt.plot(hurdle_heights, success_rates_2, 'r-^', label='Series 2')  # Red triangle markers
-plt.plot(hurdle_heights, success_rates_3, 'g-o', label='Series 3')  # Green circle markers
+# Set the positions and width for the bars
+positions = np.arange(len(environments))
+width = 0.2  # the width of the bars
 
-# Adding the dashed vertical line at x = 0.26, similar to the image
-plt.axvline(x=0.26, color='orange', linestyle='--')
+# Plot the bars
+fig, ax = plt.subplots()
+rects1 = ax.bar(positions - width*1.5, VelocityTracking_scores, width, label='Velocity Tracking')
+rects2 = ax.bar(positions - width/2, ExtremeParkour_scores, width, label='Extreme Parkour')
+rects3 = ax.bar(positions + width/2, Oracle_scores, width, label='LEEPS Oracle')
+rects4 = ax.bar(positions + width*1.5, LEEPS_scores, width, label='LEEPS')
 
-# Add legend, grid, labels, and title
-plt.legend()
-plt.grid(True)
-plt.xlabel('Hurdle Height [m]')
-plt.ylabel('Success Rate [%]')
-plt.title('Success Rate by Hurdle Height')
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('Average Terrain Level')
+ax.set_title('Scores by environment')
+ax.set_xticks(positions)
+ax.set_xticklabels(environments)
+ax.legend()
 
-# Show the plot
+# Function to add labels on top of the bars
+def add_labels(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+# Call the function to add labels
+add_labels(rects1)
+add_labels(rects2)
+add_labels(rects3)
+add_labels(rects4)
+
+# Display the plot
+plt.tight_layout()
 plt.show()

@@ -20,7 +20,7 @@ steppingstone_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plo
 gap_data = pd.read_csv("/home/ustc/Documents/my paper/iros2024_tex/plot/data/TaskRewardAblation_gap.csv")
 
 # smoothing factor  #! smoothing factor也要改小一点，现在曲线看上去太光滑了
-TSBOARD_SMOOTHING = 0.88
+TSBOARD_SMOOTHING = 0.8
 # TSBOARD_SMOOTHING = 0.7
 
 # apply exponential moving average smoothingto the data
@@ -47,14 +47,15 @@ discrete_data2 = np.concatenate((discrete_data[:NUM_EPOCHS,4]-discrete_data[:NUM
 #! NoNormalization
 discrete_data3 = np.concatenate((discrete_data[:NUM_EPOCHS,6]-discrete_data[:NUM_EPOCHS,7],discrete_data[:NUM_EPOCHS,6],discrete_data[:NUM_EPOCHS,6] + discrete_data[:NUM_EPOCHS,7]))
 
+NUM_EPOCHS_steps = 3000
 #! Normal
-step_data0 = np.concatenate((step_data[:NUM_EPOCHS,0]-step_data[:NUM_EPOCHS,1],step_data[:NUM_EPOCHS,0],step_data[:NUM_EPOCHS,0] + step_data[:NUM_EPOCHS,1]))   # shape: (9000,)
+step_data0 = np.concatenate((step_data[:NUM_EPOCHS_steps,0]-step_data[:NUM_EPOCHS_steps,1],step_data[:NUM_EPOCHS_steps,0],step_data[:NUM_EPOCHS_steps,0] + step_data[:NUM_EPOCHS_steps,1]))   # shape: (9000,)
 #! NoExploration
-step_data1 = np.concatenate((step_data[:NUM_EPOCHS,2]-step_data[:NUM_EPOCHS,3],step_data[:NUM_EPOCHS,2],step_data[:NUM_EPOCHS,2] + step_data[:NUM_EPOCHS,3]))
+step_data1 = np.concatenate((step_data[:NUM_EPOCHS_steps,2]-step_data[:NUM_EPOCHS_steps,3],step_data[:NUM_EPOCHS_steps,2],step_data[:NUM_EPOCHS_steps,2] + step_data[:NUM_EPOCHS_steps,3]))
 #! NoParkour
-step_data2 = np.concatenate((step_data[:NUM_EPOCHS,4]-step_data[:NUM_EPOCHS,5],step_data[:NUM_EPOCHS,4],step_data[:NUM_EPOCHS,4] + step_data[:NUM_EPOCHS,5]))
+step_data2 = np.concatenate((step_data[:NUM_EPOCHS_steps,4]-step_data[:NUM_EPOCHS_steps,5],step_data[:NUM_EPOCHS_steps,4],step_data[:NUM_EPOCHS_steps,4] + step_data[:NUM_EPOCHS_steps,5]))
 #! NoNormalization
-step_data3 = np.concatenate((step_data[:NUM_EPOCHS,6]-step_data[:NUM_EPOCHS,7],step_data[:NUM_EPOCHS,6],step_data[:NUM_EPOCHS,6] + step_data[:NUM_EPOCHS,7]))
+step_data3 = np.concatenate((step_data[:NUM_EPOCHS_steps,6]-step_data[:NUM_EPOCHS_steps,7],step_data[:NUM_EPOCHS_steps,6],step_data[:NUM_EPOCHS_steps,6] + step_data[:NUM_EPOCHS_steps,7]))
 
 NUM_EPOCHS_steppingstone = 5000
 #! Normal
@@ -111,6 +112,11 @@ epoch3 = range(NUM_EPOCHS)
 epoch = np.concatenate((epoch1,epoch2,epoch3))
 print("epoch shape: ",epoch.shape)
 
+epoch1_steps = range(NUM_EPOCHS_steps)  # range(0, 5999)
+epoch2_steps = range(NUM_EPOCHS_steps)
+epoch3_steps = range(NUM_EPOCHS_steps)
+epoch_steps = np.concatenate((epoch1_steps,epoch2_steps,epoch3_steps))
+
 epoch1_steppingstone = range(NUM_EPOCHS_steppingstone)  # range(0, 5999)
 epoch2_steppingstone = range(NUM_EPOCHS_steppingstone)
 epoch3_steppingstone = range(NUM_EPOCHS_steppingstone)
@@ -126,18 +132,18 @@ labels = [
 color1 = sns.color_palette('deep')  # 比较鲜亮且深沉, 用来表示自己的方法
 color2 = sns.color_palette('muted') # 更柔和、更少饱和度的颜色，用来表示baseline
 color3=[
-        color1[2],
         color2[3],
+        color1[2],
         color2[0],
         color2[4],
        ]
 
 # Initialize the figure
-lgd = plt.figure(figsize=(16/4*3, 9/4*3))
-# lgd = plt.figure(figsize=(4/4*3, 3/4*3))    #! 太空了，调整比例
+# lgd = plt.figure(figsize=(16/4*3, 9/4*3))
+lgd = plt.figure(figsize=(20, 5.5))    #! 太空了，调整比例
 
 # create a subplot
-stack = plt.subplot(221)    # subplot的格式是（行，列，第几个图）
+stack = plt.subplot(141)    # subplot的格式是（行，列，第几个图）
 for i in range(len(discrete_data_total)):  # 5条线
     print(i)
     stack = sns.lineplot(x=epoch, y=discrete_data_total[i],label=labels[i], color=color3[i]) #! plot the data
@@ -148,31 +154,33 @@ plt.xticks([0, 1000, 2000, 3000, 4000], [0, 1.0, 2.0, 3.0, 4.0])
 stack.set_ylim(-0.1, )  # 调整y轴的范围
 
 # set labels and title for the subplot
-plt.ylabel("Task Reward", fontsize=14)
-plt.title("Discrete Rough", fontsize=16)    #! label的字需要变大
+plt.ylabel("Task Reward", fontsize=16)
+plt.xlabel("Thousand Steps", fontsize=14)
+plt.title("Discrete Rough", fontsize=18)    #! label的字需要变大
 print('finsh Discrete Rough')
 stack.legend_.remove()  # 把subplot里的legend(label)去掉
 
 
 # create a subplot
-stack = plt.subplot(222)    # subplot的格式是（行，列，第几个图）
+stack = plt.subplot(142)    # subplot的格式是（行，列，第几个图）
 for i in range(len(step_data_total)):  # 5条线
     print(i)
-    stack = sns.lineplot(x=epoch, y=step_data_total[i],label=labels[i], color=color3[i]) #! plot the data
+    stack = sns.lineplot(x=epoch_steps, y=step_data_total[i],label=labels[i], color=color3[i]) #! plot the data
 
 # customize the x-axis ticks
-plt.xticks([0, 1000, 2000, 3000, 4000], [0, 1.0, 2.0, 3.0, 4.0])
+plt.xticks([0, 1000, 2000, 3000], [0, 1.0, 2.0, 3.0])
 # set axis limit
 stack.set_ylim(-0.1, )  # 调整y轴的范围
 
 # set labels and title for the subplot
-plt.ylabel("Task Reward", fontsize=14)
-plt.title("Step", fontsize=16)    #! label的字需要变大
+# plt.ylabel("Task Reward", fontsize=16)
+plt.xlabel("Thousand Steps", fontsize=14)
+plt.title("Step", fontsize=18)    #! label的字需要变大
 print('finsh Step')
 stack.legend_.remove()
 
 # create a subplot
-stack = plt.subplot(223)    # subplot的格式是（行，列，第几个图）
+stack = plt.subplot(143)    # subplot的格式是（行，列，第几个图）
 for i in range(len(steppingstone_data_total)):  # 5条线
     print(i)
     stack = sns.lineplot(x=epoch_steppingstone, y=steppingstone_data_total[i],label=labels[i], color=color3[i]) #! plot the data
@@ -183,13 +191,14 @@ plt.xticks([0, 1000, 2000, 3000, 4000, 5000], [0, 1.0, 2.0, 3.0, 4.0, 5.0])
 stack.set_ylim(-0.1, )  # 调整y轴的范围
 
 # set labels and title for the subplot
-plt.ylabel("Task Reward", fontsize=14)
-plt.title("Stepping stones", fontsize=16)    #! label的字需要变大
+plt.xlabel("Thousand Steps", fontsize=14)
+# plt.ylabel("Task Reward", fontsize=16)
+plt.title("Stepping stones", fontsize=18)    #! label的字需要变大
 print('finsh Stepping stones')
 stack.legend_.remove()
 
 # create a subplot
-stack = plt.subplot(224)    # subplot的格式是（行，列，第几个图）
+stack = plt.subplot(144)    # subplot的格式是（行，列，第几个图）
 for i in range(len(gap_data_total)):  # 5条线
     print(i)
     stack = sns.lineplot(x=epoch, y=gap_data_total[i],label=labels[i], color=color3[i]) #! plot the data
@@ -200,8 +209,9 @@ plt.xticks([0, 1000, 2000, 3000, 4000], [0, 1.0, 2.0, 3.0, 4.0])
 stack.set_ylim(-0.1, )  # 调整y轴的范围
 
 # set labels and title for the subplot
-plt.ylabel("Task Reward", fontsize=14)
-plt.title("Gap", fontsize=16)    #! label的字需要变大
+plt.xlabel("Thousand Steps", fontsize=14)
+# plt.ylabel("Task Reward", fontsize=16)
+plt.title("Gap", fontsize=18)    #! label的字需要变大
 print('finsh Gap')
 stack.legend_.remove()
 
@@ -222,9 +232,9 @@ lines, label = [sum(lol, []) for lol in zip(*lines_labels)]
 leg = lgd.legend([lines[0], lines[1], lines[2], lines[3], ], labels,
                  loc='lower center',
                  ncol=5,
-                 borderaxespad=-0.65,
+                 borderaxespad=-0.45, #-0.65,
                  frameon=False,
-                 fontsize=14
+                 fontsize=15
                  )
 
 for line in leg.get_lines():

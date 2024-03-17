@@ -144,12 +144,12 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
         if args.use_camera:
             env_cfg.depth.use_camera = args.use_camera
             
-            env_cfg.env.num_envs = env_cfg.depth.camera_num_envs
-            env_cfg.terrain.num_rows = env_cfg.depth.camera_terrain_num_rows
-            env_cfg.terrain.num_cols = env_cfg.depth.camera_terrain_num_cols
-            # env_cfg.terrain.max_error = env_cfg.terrain.max_error_camera
-            env_cfg.terrain.horizontal_scale = env_cfg.terrain.horizontal_scale_camera
-            env_cfg.terrain.simplify_grid = env_cfg.terrain.simplify_grid
+        #     env_cfg.env.num_envs = env_cfg.depth.camera_num_envs
+        #     env_cfg.terrain.num_rows = env_cfg.depth.camera_terrain_num_rows
+        #     env_cfg.terrain.num_cols = env_cfg.depth.camera_terrain_num_cols
+        #     # env_cfg.terrain.max_error = env_cfg.terrain.max_error_camera
+        #     env_cfg.terrain.horizontal_scale = env_cfg.terrain.horizontal_scale_camera
+        #     env_cfg.terrain.simplify_grid = env_cfg.terrain.simplify_grid
 
     if cfg_train is not None:
         if args.seed is not None:

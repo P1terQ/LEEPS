@@ -313,14 +313,14 @@ class LeggedV2Cfg(BaseConfig):
     class rewards:
         class scales:                       
             # main task term
-            # task_distance = 10.0    # 5.0
+            task_distance = 10.0    # 5.0
             
             #! 新加的task term，用来做消融实验，这个起作用的时候task_distance和exploration_terms应注释
-            vel_tracking = 2.0
+            # vel_tracking = 2.0
             
             # exploration terms
-            # exploration_vel = 1.5 #2.0 #1.2
-            # stalling = 1
+            exploration_vel = 1.5 #2.0 #1.2
+            stalling = 1
             
             facing_target = 0.3
             early_termination = -200 
@@ -351,6 +351,7 @@ class LeggedV2Cfg(BaseConfig):
             action_rate = -0.05 #-0.1
             delta_torques = -1.0e-7
             torques = -0.00001
+            # dof_error = -0.08
             
             
         only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)

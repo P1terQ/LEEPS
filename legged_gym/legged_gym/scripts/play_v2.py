@@ -44,9 +44,9 @@ def play(args):
                         "gap": 0.0,  # proportions[1]
                         "slope": 0.0,
                         "stair": 0.0, 
-                        "discrete": 1.0, 
+                        "discrete": 0.0, 
                         "flat": 0.0,       # proportions[5]
-                        "steppingstones": 0.0, # proportions[6]
+                        "steppingstones": 1.0, # proportions[6]
                         "crawl": 0.0,     # proportions[7]
                         "log": 0.0,
                         "crack": 0.0,
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     
     args.task = 'a1_v2'
     
-    args.debug_viz = True  
+    # args.debug_viz = True  
     # args.remote = True
     # args.use_camera = True
 
