@@ -53,8 +53,8 @@ Paper: Coming Soon <br>
 ## Robot Parkour 
 https://github.com/P1terQ/LEEPS/assets/90088571/29a084a5-ff1d-4299-b0d9-a243bba4d1ca
 
-
-
+## Acknowledgement
+This work was supported in part by the National Natural Science Foundation of China under Grant U2013601 and 62173314.
 
 
 
