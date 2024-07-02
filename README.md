@@ -1,4 +1,4 @@
-# LEEPS: Learning End-to-End Legged Perceptive Parkour Skills on Challenging Terrains(Submitted to IROS2024)
+# LEEPS: Learning End-to-End Legged Perceptive Parkour Skills on Challenging Terrains
 Website: https://sites.google.com/view/leeps <br>
 Paper: Coming Soon <br>
 
